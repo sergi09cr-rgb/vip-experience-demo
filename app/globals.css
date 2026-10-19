@@ -861,7 +861,7 @@ textarea{
   position:fixed;
   inset:0;
   z-index:3002;
-  background:rgba(3,15,28,.3);
+  background:rgba(3,15,28,.78);
   opacity:0;
   backdrop-filter:blur(0);
   pointer-events:none;
@@ -872,7 +872,46 @@ textarea{
 
 .tutorialTransitionVeil.visible{
   opacity:1;
-  backdrop-filter:blur(3px);
+  backdrop-filter:blur(8px);
+}
+
+.main{
+  view-transition-name:tutorial-main;
+}
+
+::view-transition-old(root),
+::view-transition-new(root){
+  animation-duration:.36s;
+  animation-timing-function:cubic-bezier(.2,.75,.25,1);
+}
+
+::view-transition-old(tutorial-main){
+  animation:tutorialPageOut .3s cubic-bezier(.4,0,1,1) both;
+}
+
+::view-transition-new(tutorial-main){
+  animation:tutorialPageIn .42s cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes tutorialPageOut{
+  to{
+    opacity:0;
+    transform:translateY(-4px) scale(.995);
+    filter:blur(2px);
+  }
+}
+
+@keyframes tutorialPageIn{
+  from{
+    opacity:0;
+    transform:translateY(7px) scale(.995);
+    filter:blur(3px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+    filter:none;
+  }
 }
 
 .tutorialSectionIndicator{
@@ -1052,6 +1091,13 @@ textarea{
   .tutorialCoachmark,
   .tutorialProgress span{
     transition:none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(tutorial-main),
+  ::view-transition-new(tutorial-main){
+    animation-duration:.01ms;
   }
 }
 

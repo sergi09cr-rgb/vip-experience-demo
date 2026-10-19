@@ -1,6 +1,6 @@
 'use client'
 
-import {useCallback,useEffect,useMemo,useState} from 'react'
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
 import {createPortal} from 'react-dom'
 import {usePathname,useRouter} from 'next/navigation'
 
@@ -293,6 +293,9 @@ export default function DemoTutorial({userKey='current'}){
   const [portalReady,setPortalReady]=useState(false)
   const [movingToIndex,setMovingToIndex]=useState(null)
   const [routeTransitioning,setRouteTransitioning]=useState(false)
+  const [nativePageTransition,setNativePageTransition]=useState(false)
+  const viewTransitionResolveRef=useRef(null)
+  const viewTransitionTimerRef=useRef(null)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
@@ -399,6 +402,43 @@ export default function DemoTutorial({userKey='current'}){
     return true
   },[pathname,step])
 
+  const resolveViewTransition=useCallback(()=>{
+    if(viewTransitionTimerRef.current){
+      window.clearTimeout(viewTransitionTimerRef.current)
+      viewTransitionTimerRef.current=null
+    }
+    const resolve=viewTransitionResolveRef.current
+    viewTransitionResolveRef.current=null
+    resolve?.()
+  },[])
+
+  const navigateBetweenSections=useCallback((nextPath)=>{
+    if(typeof document.startViewTransition!=='function'){
+      router.push(nextPath,{scroll:false})
+      return
+    }
+
+    setNativePageTransition(true)
+    try{
+      const transition=document.startViewTransition(async()=>{
+        const routeReady=new Promise(resolve=>{
+          viewTransitionResolveRef.current=resolve
+          viewTransitionTimerRef.current=window.setTimeout(
+            resolveViewTransition,
+            3000
+          )
+        })
+        router.push(nextPath,{scroll:false})
+        await routeReady
+      })
+      transition.finished.finally(()=>setNativePageTransition(false))
+    }catch{
+      setNativePageTransition(false)
+      resolveViewTransition()
+      router.push(nextPath,{scroll:false})
+    }
+  },[resolveViewTransition,router])
+
   useEffect(()=>{
     if(!step)return
     if(movingToIndex!==null && movingToIndex!==stepIndex){
@@ -425,7 +465,10 @@ export default function DemoTutorial({userKey='current'}){
       measureTarget()
       if(movingToIndex===stepIndex){
         setRouteTransitioning(false)
-        window.requestAnimationFrame(()=>setMovingToIndex(null))
+        setMovingToIndex(null)
+        window.requestAnimationFrame(()=>{
+          window.requestAnimationFrame(resolveViewTransition)
+        })
       }
     }
 
@@ -490,6 +533,7 @@ export default function DemoTutorial({userKey='current'}){
     movingToIndex,
     pathname,
     progressKey,
+    resolveViewTransition,
     router,
     step,
     stepIndex
@@ -520,6 +564,8 @@ export default function DemoTutorial({userKey='current'}){
     setSectionRect(null)
     setMovingToIndex(null)
     setRouteTransitioning(false)
+    setNativePageTransition(false)
+    resolveViewTransition()
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
     if(result==='completed'){
@@ -553,7 +599,7 @@ export default function DemoTutorial({userKey='current'}){
       if(changesRoute){
         setTargetRect(null)
         setSectionRect(null)
-        router.push(pendingStep.path,{scroll:false})
+        navigateBetweenSections(pendingStep.path)
       }else{
         setStepIndex(bounded)
       }
@@ -624,7 +670,7 @@ export default function DemoTutorial({userKey='current'}){
           </div>
         )}
         <div
-          className={`tutorialTransitionVeil${routeTransitioning ? ' visible' : ''}`}
+          className={`tutorialTransitionVeil${routeTransitioning && !nativePageTransition ? ' visible' : ''}`}
           aria-hidden="true"
         />
         {!targetRect&&<div className="tutorialDimmer"/>}
