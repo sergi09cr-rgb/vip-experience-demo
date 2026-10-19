@@ -162,8 +162,8 @@ export default function RecoverPasswordClient({
           <a
             href={
               hasSession
-                ? '/dashboard'
-                : '/login'
+                ? '/panel'
+                : '/iniciar-sesion'
             }
           >
             {hasSession

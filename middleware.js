@@ -37,6 +37,7 @@ export async function middleware(request){
   const path=request.nextUrl.pathname
 
   const publicPaths=[
+    '/iniciar-sesion',
     '/login',
     '/auth/confirm',
     '/recuperar-contrasena',
@@ -69,10 +70,10 @@ export async function middleware(request){
   }
 
   if(!user && !isPublic){
-    return redirectTo('/login')
+    return redirectTo('/iniciar-sesion')
   }
 
-  if(user && path==='/login'){
+  if(user && path==='/iniciar-sesion'){
     return redirectTo('/introduccion')
   }
 

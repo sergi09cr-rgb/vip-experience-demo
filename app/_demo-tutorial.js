@@ -11,7 +11,7 @@ const QUICK_STEPS=[
     body:'Esta portada resume el propósito de la aplicación y el flujo que vas a explorar con datos totalmente ficticios.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.dashboardMatchPanel',
     title:'Operativa del próximo partido',
     body:'Aquí puedes cambiar de partido, revisar sus dos invitaciones, asignar comerciales y clientes y comprobar sus tareas.'
@@ -23,8 +23,8 @@ const QUICK_STEPS=[
     body:'Consulta todos los partidos, busca uno concreto y abre su ficha para editar datos y asignaciones.'
   },
   {
-    path:'/clients',
-    selector:'[data-tour="nav-clients"]',
+    path:'/clientes',
+    selector:'[data-tour="nav-clientes"]',
     title:'Clientes',
     body:'La base de clientes reúne datos de contacto, historial de partidos y comercial responsable.'
   },
@@ -47,7 +47,7 @@ const QUICK_STEPS=[
     body:'Cada cambio relevante queda registrado para poder localizar qué ocurrió y quién lo hizo.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'[data-tour="tutorial-button"]',
     title:'Tutorial siempre disponible',
     body:'Puedes repetir el recorrido rápido o abrir el completo cuando quieras desde este botón.'
@@ -74,25 +74,25 @@ const FULL_STEPS=[
     body:'Desde este menú accedes a todas las áreas. Las opciones visibles dependen del rol y de sus permisos.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.dashboardMatchPanel',
     title:'Partido seleccionado',
     body:'El selector permite revisar cualquier partido. Los botones anterior, próximo y siguiente agilizan el cambio entre fechas.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.inviteColumns',
     title:'Invitaciones y clientes',
     body:'Cada plaza muestra su comercial, su cliente y el estado de los regalos. También puedes crear o reasignar datos desde aquí.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.matchTasksPreview',
     title:'Tareas del partido',
     body:'Las tareas se generan desde las plantillas y se agrupan para que puedas ver qué falta antes y después del partido.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.dashboardKpis',
     title:'Indicadores urgentes',
     body:'Estos contadores destacan tareas vencidas, tareas urgentes o de hoy y materiales con poco stock.'
@@ -116,19 +116,19 @@ const FULL_STEPS=[
     body:'La tabla diferencia partidos próximos, jugados y cancelados. Abre una fila para editar el partido y sus dos plazas.'
   },
   {
-    path:'/clients',
-    selector:'[data-tour="nav-clients"]',
+    path:'/clientes',
+    selector:'[data-tour="nav-clientes"]',
     title:'Base de clientes',
     body:'Aquí se centralizan los datos personales y el historial de asistencia de cada cliente.'
   },
   {
-    path:'/clients',
+    path:'/clientes',
     selector:'.toolbar',
     title:'Búsqueda global de clientes',
     body:'Puedes buscar por empresa, persona, comercial, rival o fecha. El filtro se conserva mientras navegas.'
   },
   {
-    path:'/clients',
+    path:'/clientes',
     selector:'.tablewrap',
     title:'Ficha e historial',
     body:'Cada fila muestra contacto, identificación, talla y partidos. Los partidos son accesos directos a su ficha.'
@@ -206,21 +206,21 @@ const FULL_STEPS=[
     body:'La matriz explica qué puede hacer cada rol. El superadministrador puede ajustar permisos y los cambios se aplican al rol completo.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.roleViewSwitcher',
     optional:true,
     title:'Comprobar la experiencia de otro rol',
     body:'Si tu cuenta lo permite, cambia temporalmente la vista para navegar con los accesos de un rol inferior.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'.resetDemoButton',
     optional:true,
     title:'Restablecer la demo',
     body:'El superadministrador puede recuperar todos los datos ficticios iniciales. Esta acción elimina los cambios de su propio entorno demo.'
   },
   {
-    path:'/dashboard',
+    path:'/panel',
     selector:'[data-tour="tutorial-button"]',
     title:'Ya conoces la aplicación',
     body:'Puedes abrir de nuevo cualquiera de los dos recorridos desde este botón. Explora y modifica los datos con libertad.'
@@ -235,6 +235,7 @@ export default function DemoTutorial({userKey='current'}){
   const router=useRouter()
   const pathname=usePathname()
   const storageKey=`vipExperienceDemoTutorial:v1:${userKey}`
+  const progressKey=`${storageKey}:progress`
   const [chooserOpen,setChooserOpen]=useState(false)
   const [mode,setMode]=useState(null)
   const [stepIndex,setStepIndex]=useState(0)
@@ -247,6 +248,25 @@ export default function DemoTutorial({userKey='current'}){
   const step=mode ? steps[stepIndex] : null
 
   useEffect(()=>{
+    try{
+      const saved=JSON.parse(
+        window.sessionStorage.getItem(progressKey)||'null'
+      )
+      if(
+        saved &&
+        ['quick','full'].includes(saved.mode) &&
+        Number.isInteger(saved.stepIndex)
+      ){
+        const savedSteps=saved.mode==='full' ? FULL_STEPS : QUICK_STEPS
+        setMode(saved.mode)
+        setStepIndex(clamp(saved.stepIndex,0,savedSteps.length-1))
+      }
+    }catch{
+      window.sessionStorage.removeItem(progressKey)
+    }
+  },[progressKey])
+
+  useEffect(()=>{
     function handleTutorialStart(event){
       const nextMode=event.detail?.mode
       if(!['quick','full'].includes(nextMode))return
@@ -255,6 +275,10 @@ export default function DemoTutorial({userKey='current'}){
       setStepIndex(0)
       setTargetRect(null)
       window.localStorage.setItem(storageKey,'started')
+      window.sessionStorage.setItem(
+        progressKey,
+        JSON.stringify({mode:nextMode,stepIndex:0})
+      )
     }
 
     window.addEventListener('vip-demo-tutorial-start',handleTutorialStart)
@@ -262,51 +286,103 @@ export default function DemoTutorial({userKey='current'}){
       'vip-demo-tutorial-start',
       handleTutorialStart
     )
-  },[storageKey])
+  },[progressKey,storageKey])
 
-  const locateTarget=useCallback(()=>{
+  const measureTarget=useCallback(()=>{
     if(!step?.selector){
       setTargetRect(null)
-      return
+      return false
     }
     const node=document.querySelector(step.selector)
     if(!node){
-      setTargetRect(null)
-      return
+      return false
     }
-    node.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'})
-    window.setTimeout(()=>{
-      const rect=node.getBoundingClientRect()
-      setTargetRect({
-        top:clamp(rect.top-7,8,window.innerHeight-24),
-        left:clamp(rect.left-7,8,window.innerWidth-24),
-        width:Math.min(rect.width+14,window.innerWidth-16),
-        height:Math.min(rect.height+14,window.innerHeight-16)
-      })
-    },180)
+    const rect=node.getBoundingClientRect()
+    setTargetRect({
+      top:clamp(rect.top-7,8,window.innerHeight-24),
+      left:clamp(rect.left-7,8,window.innerWidth-24),
+      width:Math.min(rect.width+14,window.innerWidth-16),
+      height:Math.min(rect.height+14,window.innerHeight-16)
+    })
+    return true
   },[step])
 
   useEffect(()=>{
     if(!step)return
     if(step.path && pathname!==step.path){
-      router.push(step.path)
+      window.sessionStorage.setItem(
+        progressKey,
+        JSON.stringify({mode,stepIndex})
+      )
+      router.push(step.path,{scroll:false})
       return
     }
-    const timer=window.setTimeout(locateTarget,220)
-    window.addEventListener('resize',locateTarget)
-    window.addEventListener('scroll',locateTarget,true)
+
+    let attempts=0
+    let retryTimer=null
+    let settleTimer=null
+
+    const revealTarget=()=>{
+      if(!step.selector){
+        setTargetRect(null)
+        return
+      }
+
+      const node=document.querySelector(step.selector)
+      if(!node){
+        attempts+=1
+        if(attempts<10){
+          retryTimer=window.setTimeout(revealTarget,120)
+        }else if(!step.optional){
+          setTargetRect(null)
+        }
+        return
+      }
+
+      node.scrollIntoView({
+        block:'center',
+        inline:'nearest',
+        behavior:'smooth'
+      })
+      settleTimer=window.setTimeout(measureTarget,360)
+    }
+
+    let frame=null
+    const measureOnViewportChange=()=>{
+      if(frame)window.cancelAnimationFrame(frame)
+      frame=window.requestAnimationFrame(measureTarget)
+    }
+
+    const timer=window.setTimeout(revealTarget,100)
+    window.addEventListener('resize',measureOnViewportChange)
+    window.addEventListener('scroll',measureOnViewportChange,true)
     return ()=>{
       window.clearTimeout(timer)
-      window.removeEventListener('resize',locateTarget)
-      window.removeEventListener('scroll',locateTarget,true)
+      window.clearTimeout(retryTimer)
+      window.clearTimeout(settleTimer)
+      if(frame)window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize',measureOnViewportChange)
+      window.removeEventListener('scroll',measureOnViewportChange,true)
     }
-  },[locateTarget,pathname,router,step])
+  },[
+    measureTarget,
+    mode,
+    pathname,
+    progressKey,
+    router,
+    step,
+    stepIndex
+  ])
 
   function start(nextMode){
     setChooserOpen(false)
     setMode(nextMode)
     setStepIndex(0)
     window.localStorage.setItem(storageKey,'started')
+    window.sessionStorage.setItem(
+      progressKey,
+      JSON.stringify({mode:nextMode,stepIndex:0})
+    )
   }
 
   function close(result='skipped'){
@@ -314,6 +390,7 @@ export default function DemoTutorial({userKey='current'}){
     setStepIndex(0)
     setTargetRect(null)
     window.localStorage.setItem(storageKey,result)
+    window.sessionStorage.removeItem(progressKey)
   }
 
   function move(direction){
@@ -322,8 +399,12 @@ export default function DemoTutorial({userKey='current'}){
       close('completed')
       return
     }
-    setTargetRect(null)
-    setStepIndex(Math.max(0,next))
+    const bounded=Math.max(0,next)
+    window.sessionStorage.setItem(
+      progressKey,
+      JSON.stringify({mode,stepIndex:bounded})
+    )
+    setStepIndex(bounded)
   }
 
   const cardStyle=targetRect && typeof window!=='undefined' && window.innerWidth>760
@@ -395,6 +476,7 @@ export default function DemoTutorial({userKey='current'}){
         )}
         {!targetRect&&<div className="tutorialDimmer"/>}
         <section
+          key={`${mode}:${stepIndex}:${pathname}`}
           className={`tutorialCoachmark${targetRect ? '' : ' centered'}`}
           style={cardStyle}
           role="dialog"

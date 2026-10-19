@@ -48,7 +48,7 @@ export default function UpdatePasswordPage(){
 
         if(sessionError || !data.user){
           throw new Error(
-            "Abre el enlace del correo por establir la contraseña, o inicia sesión."
+            "Abre el enlace del correo para establecer la contraseña o inicia sesión."
           )
         }
 
@@ -99,7 +99,7 @@ export default function UpdatePasswordPage(){
     }
 
     if(password!==repeat){
-      setError('Les contrasenyes no coincideixen.')
+      setError('Las contraseñas no coinciden.')
       return
     }
 
@@ -189,7 +189,7 @@ export default function UpdatePasswordPage(){
               Contraseña guardada correctamente.
             </p>
 
-            <a className="btn primary" href="/dashboard">
+            <a className="btn primary" href="/panel">
               Entrar al panel
             </a>
           </div>
@@ -249,7 +249,7 @@ export default function UpdatePasswordPage(){
 
         {!checking && !account && (
           <p>
-            <a href="/login">Volver al inicio de sesión</a>
+            <a href="/iniciar-sesion">Volver al inicio de sesión</a>
           </p>
         )}
       </section>

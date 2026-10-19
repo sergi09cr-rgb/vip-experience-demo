@@ -19,9 +19,9 @@ const SECTION_PERMISSION={
 }
 
 const SECTION_PATHS=[
-  ['dashboard','/dashboard'],
+  ['dashboard','/panel'],
   ['partits','/calendario'],
-  ['clients','/clients'],
+  ['clients','/clientes'],
   ['tasques','/tareas'],
   ['stock','/stock'],
   ['configuracio','/configuracion']
@@ -60,7 +60,7 @@ export default async function ManagerPage({
       )
     )?.[1]
 
-    redirect(destination||'/login')
+    redirect(destination||'/iniciar-sesion')
   }
 
   const effectiveData={

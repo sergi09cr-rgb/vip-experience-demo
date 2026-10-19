@@ -31,7 +31,7 @@ export default async function Page(){
   const effectiveRole=getEffectiveRole(actualRole)
 
   if(!hasPermission(permissionRows,effectiveRole,'view_history')){
-    redirect('/dashboard')
+    redirect('/panel')
   }
 
   const permissions=rolePermissionMap(

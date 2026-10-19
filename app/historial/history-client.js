@@ -89,7 +89,7 @@ const FIELD_LABELS={
   ordre:"Orden",
   activa:'Activa',
   completada:'Completada',
-  completada_manual:"Completada manualmentee",
+  completada_manual:"Completada manualmente",
   quantitat:"Cantidad",
   unitats:"Unidades"
 
@@ -1042,7 +1042,7 @@ export default function HistoryClient({
       row.taula==='clients' &&
       clientMap[id]
     ){
-      return `/clients?editar=${encodeURIComponent(id)}`
+      return `/clientes?editar=${encodeURIComponent(id)}`
     }
 
     if(
@@ -1620,7 +1620,7 @@ export default function HistoryClient({
   if(!ready){
     return (
       <div className="empty">
-        Recuperant historial...
+        Recuperando historial...
       </div>
     )
   }
@@ -1635,7 +1635,7 @@ export default function HistoryClient({
         <h1>Historial</h1>
 
         <p className="muted">
-          Registre de cambios realitzats
+          Registro de cambios realizados
           en la aplicación.
         </p>
 
@@ -1718,7 +1718,7 @@ export default function HistoryClient({
         >
 
           <option value="all">
-            Todos los apartats
+            Todos los apartados
           </option>
 
           {tables.map(table=>
@@ -1791,7 +1791,7 @@ export default function HistoryClient({
           }}
         >
           <span className="muted">
-            Des de
+            Desde
           </span>
 
           <input
@@ -1813,7 +1813,7 @@ export default function HistoryClient({
           }}
         >
           <span className="muted">
-            Fins a
+            Hasta
           </span>
 
           <input
@@ -1958,7 +1958,7 @@ export default function HistoryClient({
                           location.href=editLink
                         }}
                       >
-                        Obrir / editar
+                        Abrir / editar
                       </button>
                     </div>
                   }

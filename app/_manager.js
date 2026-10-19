@@ -1273,7 +1273,7 @@ const can=
                 .limit(300)
           }
           const requested=sections===null ? Object.keys(queries) : [...new Set(sections)]
-          if(requested.some(key=>!queries[key]))throw new Error("Secció de datos desconeguda")
+          if(requested.some(key=>!queries[key]))throw new Error("Sección de datos desconocida")
           const qs=await Promise.all(requested.map(key=>queries[key]()))
 
           for(const q of qs){
@@ -3109,7 +3109,7 @@ function openCommercial(
       return <>
 
         <PageHead
-          title="Dashboard"
+          title="Panel"
           subtitle="Control del partido y de las acciones que requieren atención."
         />
 
@@ -3328,7 +3328,7 @@ function openCommercial(
     return <>
 
       <PageHead
-        title="Dashboard"
+        title="Panel"
         subtitle="Control del partido y de las acciones que requieren atención."
       />
 
@@ -4303,7 +4303,7 @@ function Detail({
   }
 >
   {can('matches_edit')
-    ? 'Obrir / editar'
+    ? 'Abrir / editar'
     : "Ver"
   }
 </button>
@@ -7781,7 +7781,7 @@ const second=
         <h2>
   {modal.id
     ? canEditMatch
-      ? "Obrir / editar partido"
+      ? "Abrir / editar partido"
       : "Ver partido"
     : "Nuevo partido"
   }
@@ -9409,7 +9409,7 @@ disabled={!canEditClient || savingClient}
 
           <p className="muted">
             {!f.comercial_id
-              ? "Selecciona primer el comercial del cliente."
+              ? "Selecciona primero el comercial del cliente."
               : availableInvitations.length===0
                 ? "No hay plazas disponibles para esta entrada de comercial: comprueba si ya tiene una asignación ocupada o si hay partidos con plazas libres."
                 : "Al guardar, el cliente y el comercial quedarán asignados a la plaza seleccionada."
@@ -9619,10 +9619,10 @@ if(!(can('commercials_create') || can('commercials_edit'))){
         `¿Seguro que quieres eliminar el comercial "${c?.nom||''}"?`,
         '',
         invitationCount
-          ? `Se desasignará de ${invitationCount} invitación/ns.`
+          ? `Se desasignará de ${invitationCount} ${invitationCount===1 ? 'invitación' : 'invitaciones'}.`
           : "No tiene ningún partido asignado.",
         clientCount
-          ? `${clientCount} cliente/s quedarán sin comercial y sin asignación de partido.`
+          ? `${clientCount} ${clientCount===1 ? 'cliente quedará' : 'clientes quedarán'} sin comercial y sin asignación de partido.`
           : "No tiene ningún cliente vinculado.",
         '',
         "El registro dejará de aparecer, pero quedará constancia en el historial."

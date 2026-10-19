@@ -88,8 +88,8 @@ export default function Introduction(){
             </button>
           </div>
 
-          <Link className="introductionDashboardLink" href="/dashboard">
-            Ir directamente al Dashboard <span aria-hidden="true">→</span>
+          <Link className="introductionDashboardLink" href="/panel">
+            Ir directamente al Panel <span aria-hidden="true">→</span>
           </Link>
         </div>
 

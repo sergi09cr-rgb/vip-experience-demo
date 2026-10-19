@@ -10,9 +10,9 @@ import {createClient} from '../lib/supabase-browser'
 
 const baseLinks=[
   ['/introduccion','⌂','Introducción',null],
-  ['/dashboard','▣','Dashboard','view_dashboard'],
+  ['/panel','▣','Panel','view_dashboard'],
   ['/calendario','◆',"Calendario",'view_matches'],
-  ['/clients','♧',"Clientes",'view_clients'],
+  ['/clientes','♧',"Clientes",'view_clients'],
   ['/tareas','✓',"Tareas",'view_tasks'],
   ['/stock','▣','Stock','view_stock'],
   ['/historial','◷','Historial','view_history']
@@ -46,7 +46,7 @@ export default function Shell({
       setResetting(false)
       return
     }
-    window.location.assign('/dashboard')
+    window.location.assign('/panel')
   }
 
   function changeViewRole(event){
@@ -128,7 +128,11 @@ export default function Shell({
 
           {links.map(([href,icon,label])=>{
             const sectionKey=
-              href==='/calendario'
+              href==='/panel'
+                ? 'dashboard'
+                : href==='/clientes'
+                  ? 'clients'
+                  : href==='/calendario'
                 ? 'partits'
                 : href==='/tareas'
                   ? 'tasques'
