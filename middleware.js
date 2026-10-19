@@ -40,7 +40,9 @@ export async function middleware(request){
     '/login',
     '/auth/confirm',
     '/recuperar-contrasena',
-    '/actualizar-contrasena'
+    '/actualizar-contrasena',
+    '/recuperar-contrasenya',
+    '/actualitzar-contrasenya'
   ]
 
   const isPublic=publicPaths.includes(path)
