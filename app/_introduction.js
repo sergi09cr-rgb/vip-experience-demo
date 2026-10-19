@@ -21,7 +21,6 @@ export default function Introduction(){
 
   return <section
     className={`introduction${collapsed ? ' collapsed' : ''}`}
-    data-tour="intro-overview"
   >
     <header className="introductionTopbar">
       <div>
@@ -44,7 +43,7 @@ export default function Introduction(){
     </header>
 
     {!collapsed&&<div id="introductionContent">
-      <div className="introductionHero">
+      <div className="introductionHero" data-tour="intro-overview">
         <div className="introductionCopy">
           <div className="introductionStatus">
             <span/>

@@ -407,21 +407,6 @@ export default function DemoTutorial({userKey='current'}){
     setStepIndex(bounded)
   }
 
-  const cardStyle=targetRect && typeof window!=='undefined' && window.innerWidth>760
-    ? {
-        top:clamp(
-          targetRect.top+targetRect.height+14,
-          16,
-          window.innerHeight-310
-        ),
-        left:clamp(
-          targetRect.left,
-          16,
-          window.innerWidth-396
-        )
-      }
-    : undefined
-
   return <>
     <button
       type="button"
@@ -477,8 +462,7 @@ export default function DemoTutorial({userKey='current'}){
         {!targetRect&&<div className="tutorialDimmer"/>}
         <section
           key={`${mode}:${stepIndex}:${pathname}`}
-          className={`tutorialCoachmark${targetRect ? '' : ' centered'}`}
-          style={cardStyle}
+          className="tutorialCoachmark"
           role="dialog"
           aria-modal="true"
           aria-labelledby="tutorialStepTitle"
