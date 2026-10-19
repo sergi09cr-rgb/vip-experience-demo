@@ -39,8 +39,8 @@ export async function middleware(request){
   const publicPaths=[
     '/login',
     '/auth/confirm',
-    '/recuperar-contrasenya',
-    '/actualitzar-contrasenya'
+    '/recuperar-contrasena',
+    '/actualizar-contrasena'
   ]
 
   const isPublic=publicPaths.includes(path)

@@ -16,6 +16,6 @@ export default function Page({searchParams={}}){
   const suffix=query.toString()
 
   redirect(
-    suffix ? `/calendari?${suffix}` : '/calendari'
+    suffix ? `/calendario?${suffix}` : '/calendario'
   )
 }

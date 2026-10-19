@@ -20,11 +20,11 @@ const SECTION_PERMISSION={
 
 const SECTION_PATHS=[
   ['dashboard','/dashboard'],
-  ['partits','/calendari'],
+  ['partits','/calendario'],
   ['clients','/clients'],
-  ['tasques','/tasques'],
+  ['tasques','/tareas'],
   ['stock','/stock'],
-  ['configuracio','/configuracio']
+  ['configuracio','/configuracion']
 ]
 
 

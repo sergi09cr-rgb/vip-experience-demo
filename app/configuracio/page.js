@@ -1,3 +1,5 @@
-import ManagerPage from '../_manager-page'
-export const dynamic='force-dynamic'
-export default function Page(){return <ManagerPage section="configuracio"/>}
+import {redirect} from 'next/navigation'
+
+export default function LegacyConfiguration(){
+  redirect('/configuracion')
+}

@@ -14,7 +14,7 @@ export async function GET(request){
   const type=params.get('type')
 
   const destination=new URL(
-    '/actualitzar-contrasenya',
+    '/actualizar-contrasena',
     request.url
   )
 

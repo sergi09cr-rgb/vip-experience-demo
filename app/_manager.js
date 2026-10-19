@@ -2159,7 +2159,7 @@ async function downloadBackup(){
     }
     else if(initialSection==='configuracio'){
       const commercialId=params.get('comercial')
-      const templateId=params.get('tasca')
+      const templateId=params.get('tarea')
 
       if(
         commercialId &&
@@ -2179,7 +2179,7 @@ async function downloadBackup(){
           type:'template',
           id:templateId
         }
-        parameter='tasca'
+        parameter='tarea'
       }
     }
     else if(initialSection==='stock'){
@@ -2901,7 +2901,7 @@ function openCommercial(
     setModal(null)
 
     const href=
-      `/tasques?mode=pending&partit=${
+      `/tareas?mode=pending&partit=${
         encodeURIComponent(partitId)
       }`
 
@@ -6149,7 +6149,7 @@ const second=
                 onClick={
                   ()=>
                     router.push(
-                      '/configuracio/usuaris'
+                      '/configuracion/usuarios'
                     )
                 }
               >

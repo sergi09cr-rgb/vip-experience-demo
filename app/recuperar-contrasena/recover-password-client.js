@@ -43,7 +43,7 @@ export default function RecoverPasswordClient({
           cleanEmail,
           {
             redirectTo:
-              `${window.location.origin}/actualitzar-contrasenya`
+              `${window.location.origin}/actualizar-contrasena`
           }
         )
 

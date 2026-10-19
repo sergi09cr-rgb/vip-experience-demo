@@ -386,7 +386,7 @@ export async function POST(request){
             `${
               process.env.NEXT_PUBLIC_SITE_URL ||
               'http://localhost:3000'
-            }/actualitzar-contrasenya`
+            }/actualizar-contrasena`
         }
       )
     if(error){

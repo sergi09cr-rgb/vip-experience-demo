@@ -17,8 +17,8 @@ const QUICK_STEPS=[
     body:'Aquí puedes cambiar de partido, revisar sus dos invitaciones, asignar comerciales y clientes y comprobar sus tareas.'
   },
   {
-    path:'/calendari',
-    selector:'[data-tour="nav-calendari"]',
+    path:'/calendario',
+    selector:'[data-tour="nav-calendario"]',
     title:'Calendario',
     body:'Consulta todos los partidos, busca uno concreto y abre su ficha para editar datos y asignaciones.'
   },
@@ -29,8 +29,8 @@ const QUICK_STEPS=[
     body:'La base de clientes reúne datos de contacto, historial de partidos y comercial responsable.'
   },
   {
-    path:'/tasques',
-    selector:'[data-tour="nav-tasques"]',
+    path:'/tareas',
+    selector:'[data-tour="nav-tareas"]',
     title:'Tareas',
     body:'Filtra por varias prioridades, grupos y responsables y actualiza el estado de cada tarea.'
   },
@@ -98,19 +98,19 @@ const FULL_STEPS=[
     body:'Estos contadores destacan tareas vencidas, tareas urgentes o de hoy y materiales con poco stock.'
   },
   {
-    path:'/calendari',
-    selector:'[data-tour="nav-calendari"]',
+    path:'/calendario',
+    selector:'[data-tour="nav-calendario"]',
     title:'Calendario de partidos',
     body:'Abre Calendario para consultar la temporada completa y gestionar cada partido.'
   },
   {
-    path:'/calendari',
+    path:'/calendario',
     selector:'.partitsToolbar',
     title:'Búsqueda y creación',
     body:'Busca por rival, fecha o competición. Si tu rol lo permite, también puedes crear un partido nuevo.'
   },
   {
-    path:'/calendari',
+    path:'/calendario',
     selector:'.tablewrap',
     title:'Estados del calendario',
     body:'La tabla diferencia partidos próximos, jugados y cancelados. Abre una fila para editar el partido y sus dos plazas.'
@@ -134,19 +134,19 @@ const FULL_STEPS=[
     body:'Cada fila muestra contacto, identificación, talla y partidos. Los partidos son accesos directos a su ficha.'
   },
   {
-    path:'/tasques',
-    selector:'[data-tour="nav-tasques"]',
+    path:'/tareas',
+    selector:'[data-tour="nav-tareas"]',
     title:'Centro de tareas',
     body:'Tareas reúne todas las acciones operativas generadas para los partidos.'
   },
   {
-    path:'/tasques',
+    path:'/tareas',
     selector:'.filters',
     title:'Filtros combinables',
     body:'Combina varias prioridades, grupos y responsables, además de partido, estado y búsqueda de texto.'
   },
   {
-    path:'/tasques',
+    path:'/tareas',
     selector:'.taskcards',
     title:'Cambio de estado',
     body:'Actualiza cada tarea con su selector. Las tareas completadas y las fechas límite se recalculan de forma coherente.'
@@ -176,31 +176,31 @@ const FULL_STEPS=[
     body:'Abre un registro para comparar valores anteriores y nuevos y, cuando corresponde, volver al elemento relacionado.'
   },
   {
-    path:'/configuracio',
-    selector:'[data-tour="nav-configuracio"]',
+    path:'/configuracion',
+    selector:'[data-tour="nav-configuracion"]',
     title:'Configuración operativa',
     body:'Configuración contiene los comerciales, las plantillas que generan tareas y las copias de seguridad.'
   },
   {
-    path:'/configuracio',
+    path:'/configuracion',
     selector:'.configSectionPanel',
     title:'Comerciales',
     body:'Gestiona comerciales de primera y segunda asistencia y comprueba cuáles están disponibles para nuevas asignaciones.'
   },
   {
-    path:'/configuracio',
+    path:'/configuracion',
     selector:'.configSectionPanel:nth-of-type(2)',
     title:'Plantillas de tareas',
     body:'Las plantillas definen nombre, grupo, fecha relativa, estados válidos, estado correcto y responsable de las tareas automáticas.'
   },
   {
-    path:'/configuracio/usuaris',
+    path:'/configuracion/usuarios',
     selector:'.panel',
     title:'Usuarios y roles',
     body:'Los administradores autorizados pueden invitar usuarios, asignar roles y activar o desactivar accesos.'
   },
   {
-    path:'/configuracio/usuaris/permisos',
+    path:'/configuracion/usuarios/permisos',
     selector:'.permissionsMatrixWrap',
     title:'Permisos por rol',
     body:'La matriz explica qué puede hacer cada rol. El superadministrador puede ajustar permisos y los cambios se aplican al rol completo.'

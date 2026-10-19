@@ -11,9 +11,9 @@ import {createClient} from '../lib/supabase-browser'
 const baseLinks=[
   ['/introduccion','⌂','Introducción',null],
   ['/dashboard','▣','Dashboard','view_dashboard'],
-  ['/calendari','◆',"Calendario",'view_matches'],
+  ['/calendario','◆',"Calendario",'view_matches'],
   ['/clients','♧',"Clientes",'view_clients'],
-  ['/tasques','✓',"Tareas",'view_tasks'],
+  ['/tareas','✓',"Tareas",'view_tasks'],
   ['/stock','▣','Stock','view_stock'],
   ['/historial','◷','Historial','view_history']
 ]
@@ -100,7 +100,7 @@ export default function Shell({
 
   if(permissions?.view_configuration!==false){
     links.push([
-      '/configuracio',
+      '/configuracion',
       '⚙',
       "Configuración",
       'view_configuration'
@@ -128,11 +128,17 @@ export default function Shell({
 
           {links.map(([href,icon,label])=>{
             const sectionKey=
-              href==='/calendari' ? 'partits' : href.slice(1)
-            const isConfiguration=href==='/configuracio'
+              href==='/calendario'
+                ? 'partits'
+                : href==='/tareas'
+                  ? 'tasques'
+                  : href==='/configuracion'
+                    ? 'configuracio'
+                    : href.slice(1)
+            const isConfiguration=href==='/configuracion'
             const showConfigurationMenu=
               isConfiguration &&
-              pathname?.startsWith('/configuracio')
+              pathname?.startsWith('/configuracion')
 
             return <div className="navGroup" key={href}>
               <Link
@@ -152,10 +158,10 @@ export default function Shell({
               {showConfigurationMenu && (
                 <div className="navSubmenu">
                   <Link
-                    href="/configuracio/usuaris"
+                    href="/configuracion/usuarios"
                     prefetch
                     className={`navSubLink ${
-                      pathname==='/configuracio/usuaris'
+                      pathname==='/configuracion/usuarios'
                         ? 'active'
                         : ''
                     }`}
@@ -164,11 +170,11 @@ export default function Shell({
                   </Link>
 
                   <Link
-                    href="/configuracio/usuaris/permisos"
+                    href="/configuracion/usuarios/permisos"
                     prefetch
                     className={`navSubLink deeper ${
                       pathname===
-                        '/configuracio/usuaris/permisos'
+                        '/configuracion/usuarios/permisos'
                         ? 'active'
                         : ''
                     }`}

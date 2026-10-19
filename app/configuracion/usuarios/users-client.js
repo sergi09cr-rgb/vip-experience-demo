@@ -383,7 +383,7 @@ export default function UsersClient({
           type="button"
           className="btn"
           disabled={busy}
-          onClick={()=>router.push('/configuracio')}
+          onClick={()=>router.push('/configuracion')}
         >
           ← Configuración
         </button>
@@ -488,7 +488,7 @@ export default function UsersClient({
             className="btn primary"
             onClick={()=>
               router.push(
-                '/configuracio/usuaris/permisos'
+                '/configuracion/usuarios/permisos'
               )
             }
           >

@@ -1035,7 +1035,7 @@ export default function HistoryClient({
       row.taula==='partits' &&
       partitMap[id]
     ){
-      return `/calendari?editar=${encodeURIComponent(id)}`
+      return `/calendario?editar=${encodeURIComponent(id)}`
     }
 
     if(
@@ -1049,14 +1049,14 @@ export default function HistoryClient({
       row.taula==='comercials' &&
       comercialMap[id]
     ){
-      return `/configuracio?comercial=${encodeURIComponent(id)}`
+      return `/configuracion?comercial=${encodeURIComponent(id)}`
     }
 
     if(
       row.taula==='task_templates' &&
       templateMap[id]
     ){
-      return `/configuracio?tasca=${encodeURIComponent(id)}`
+      return `/configuracion?tarea=${encodeURIComponent(id)}`
     }
 
     if(
@@ -1072,7 +1072,7 @@ export default function HistoryClient({
         invitacioMap[id] || data
 
       if(invitation?.partit_id){
-        return `/calendari?editar=${encodeURIComponent(invitation.partit_id)}`
+        return `/calendario?editar=${encodeURIComponent(invitation.partit_id)}`
       }
     }
 
@@ -1086,7 +1086,7 @@ export default function HistoryClient({
     }
 
     if(row.taula==='profiles'){
-      return '/configuracio/usuaris'
+      return '/configuracion/usuarios'
     }
 
     return null

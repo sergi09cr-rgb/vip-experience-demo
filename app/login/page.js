@@ -386,7 +386,7 @@ export default function LoginPage(){
           </form>
 
           <p style={{textAlign:'center',marginTop:16}}>
-            <a href="/recuperar-contrasenya">
+            <a href="/recuperar-contrasena">
               He olvidado la contraseña
             </a>
           </p>

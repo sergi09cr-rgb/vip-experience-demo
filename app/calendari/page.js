@@ -1,7 +1,5 @@
-import ManagerPage from '../_manager-page'
+import {redirect} from 'next/navigation'
 
-export const dynamic='force-dynamic'
-
-export default function Page(){
-  return <ManagerPage section="partits"/>
+export default function LegacyCalendar(){
+  redirect('/calendario')
 }
