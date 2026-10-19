@@ -875,6 +875,43 @@ textarea{
   backdrop-filter:blur(8px);
 }
 
+.tutorialPageSnapshot{
+  position:fixed;
+  z-index:1;
+  overflow:hidden;
+  background:#f3f7fc;
+  opacity:1;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  transform-origin:center top;
+  will-change:opacity,transform,filter;
+  transition:
+    opacity .32s ease,
+    transform .36s cubic-bezier(.2,.75,.25,1),
+    filter .32s ease;
+}
+
+.tutorialPageSnapshot::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(3,15,28,.22);
+  pointer-events:none;
+}
+
+.tutorialPageSnapshot.leaving{
+  opacity:0;
+  transform:translate3d(0,-4px,0) scale(.998);
+  filter:blur(1.5px);
+}
+
+.tutorialPageSnapshotContent{
+  width:100%;
+  min-height:100%;
+  animation:none!important;
+  view-transition-name:none!important;
+}
+
 .main{
   view-transition-name:tutorial-main;
 }
@@ -1087,6 +1124,7 @@ textarea{
   .nav a,
   .tutorialSpotlight,
   .tutorialTransitionVeil,
+  .tutorialPageSnapshot,
   .tutorialSectionIndicator,
   .tutorialCoachmark,
   .tutorialProgress span{

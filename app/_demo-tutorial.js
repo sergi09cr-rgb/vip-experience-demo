@@ -294,8 +294,10 @@ export default function DemoTutorial({userKey='current'}){
   const [movingToIndex,setMovingToIndex]=useState(null)
   const [routeTransitioning,setRouteTransitioning]=useState(false)
   const [nativePageTransition,setNativePageTransition]=useState(false)
+  const [pageSnapshot,setPageSnapshot]=useState(null)
   const viewTransitionResolveRef=useRef(null)
   const viewTransitionTimerRef=useRef(null)
+  const snapshotTimerRef=useRef(null)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
@@ -412,6 +414,72 @@ export default function DemoTutorial({userKey='current'}){
     resolve?.()
   },[])
 
+  const clearPageSnapshot=useCallback(()=>{
+    if(snapshotTimerRef.current){
+      window.clearTimeout(snapshotTimerRef.current)
+      snapshotTimerRef.current=null
+    }
+    setPageSnapshot(null)
+  },[])
+
+  const capturePageSnapshot=useCallback(()=>{
+    if(typeof document.startViewTransition==='function')return
+
+    const source=document.querySelector('.main')
+    if(!source)return
+
+    const rect=source.getBoundingClientRect()
+    const clone=source.cloneNode(true)
+    const sourceControls=source.querySelectorAll('input,textarea,select')
+    const cloneControls=clone.querySelectorAll('input,textarea,select')
+
+    sourceControls.forEach((sourceControl,index)=>{
+      const cloneControl=cloneControls[index]
+      if(!cloneControl)return
+
+      if(sourceControl instanceof HTMLSelectElement){
+        Array.from(cloneControl.options).forEach((option,optionIndex)=>{
+          option.toggleAttribute(
+            'selected',
+            Boolean(sourceControl.options[optionIndex]?.selected)
+          )
+        })
+      }else if(sourceControl instanceof HTMLTextAreaElement){
+        cloneControl.textContent=sourceControl.value
+      }else{
+        cloneControl.setAttribute('value',sourceControl.value)
+        if(['checkbox','radio'].includes(sourceControl.type)){
+          cloneControl.toggleAttribute('checked',sourceControl.checked)
+        }
+      }
+    })
+
+    clone.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'))
+    clone.classList.add('tutorialPageSnapshotContent')
+    clone.setAttribute('aria-hidden','true')
+
+    setPageSnapshot({
+      html:clone.outerHTML,
+      top:rect.top,
+      left:rect.left,
+      width:rect.width,
+      height:rect.height,
+      leaving:false
+    })
+  },[])
+
+  const releasePageSnapshot=useCallback(()=>{
+    setPageSnapshot(current=>current ? {...current,leaving:true} : null)
+    if(snapshotTimerRef.current){
+      window.clearTimeout(snapshotTimerRef.current)
+    }
+    snapshotTimerRef.current=window.setTimeout(()=>{
+      setPageSnapshot(null)
+      setMovingToIndex(null)
+      snapshotTimerRef.current=null
+    },360)
+  },[])
+
   const navigateBetweenSections=useCallback((nextPath)=>{
     if(typeof document.startViewTransition!=='function'){
       router.push(nextPath,{scroll:false})
@@ -465,7 +533,11 @@ export default function DemoTutorial({userKey='current'}){
       measureTarget()
       if(movingToIndex===stepIndex){
         setRouteTransitioning(false)
-        setMovingToIndex(null)
+        if(pageSnapshot&&!pageSnapshot.leaving){
+          releasePageSnapshot()
+        }else if(!pageSnapshot){
+          setMovingToIndex(null)
+        }
         window.requestAnimationFrame(()=>{
           window.requestAnimationFrame(resolveViewTransition)
         })
@@ -532,7 +604,9 @@ export default function DemoTutorial({userKey='current'}){
     mode,
     movingToIndex,
     pathname,
+    pageSnapshot,
     progressKey,
+    releasePageSnapshot,
     resolveViewTransition,
     router,
     step,
@@ -565,6 +639,7 @@ export default function DemoTutorial({userKey='current'}){
     setMovingToIndex(null)
     setRouteTransitioning(false)
     setNativePageTransition(false)
+    clearPageSnapshot()
     resolveViewTransition()
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
@@ -595,10 +670,11 @@ export default function DemoTutorial({userKey='current'}){
     )
     setMovingToIndex(bounded)
     setRouteTransitioning(changesRoute)
+    if(changesRoute){
+      capturePageSnapshot()
+    }
     window.setTimeout(()=>{
       if(changesRoute){
-        setTargetRect(null)
-        setSectionRect(null)
         navigateBetweenSections(pendingStep.path)
       }else{
         setStepIndex(bounded)
@@ -669,11 +745,24 @@ export default function DemoTutorial({userKey='current'}){
             {SECTION_META[sectionKeyFromPath(pathname)]?.label}
           </div>
         )}
+        {pageSnapshot&&(
+          <div
+            className={`tutorialPageSnapshot${pageSnapshot.leaving ? ' leaving' : ''}`}
+            style={{
+              top:pageSnapshot.top,
+              left:pageSnapshot.left,
+              width:pageSnapshot.width,
+              height:pageSnapshot.height
+            }}
+            aria-hidden="true"
+            dangerouslySetInnerHTML={{__html:pageSnapshot.html}}
+          />
+        )}
         <div
-          className={`tutorialTransitionVeil${routeTransitioning && !nativePageTransition ? ' visible' : ''}`}
+          className={`tutorialTransitionVeil${routeTransitioning && !nativePageTransition && !pageSnapshot ? ' visible' : ''}`}
           aria-hidden="true"
         />
-        {!targetRect&&<div className="tutorialDimmer"/>}
+        {!targetRect&&!pageSnapshot&&<div className="tutorialDimmer"/>}
         <section
           className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
           role="dialog"
