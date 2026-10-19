@@ -94,7 +94,7 @@ export default function LoginPage(){
       if(error){
 
         setError(
-          'El correu o la contrasenya no són correctes.'
+          "El correo o la contraseña no son correctos."
         )
 
         return
@@ -103,7 +103,7 @@ export default function LoginPage(){
 
 
       router.replace(
-        '/dashboard'
+        '/introduccion'
       )
 
       router.refresh()
@@ -112,7 +112,7 @@ export default function LoginPage(){
     catch{
 
       setError(
-        'No s’ha pogut iniciar sessió. Torna-ho a provar.'
+        "No se ha podido iniciar sesión. Vuelve a intentarlo."
       )
 
     }
@@ -138,14 +138,14 @@ export default function LoginPage(){
         throw error
       }
 
-      router.replace('/dashboard')
+      router.replace('/introduccion')
       router.refresh()
 
     }
     catch{
 
       setError(
-        'No s’ha pogut crear l’entorn de demostració. Torna-ho a provar.'
+        "No se ha podido crear el entorno de demostración. Vuelve a intentarlo."
       )
 
     }
@@ -182,18 +182,18 @@ export default function LoginPage(){
             <div className="loginAccent"/>
 
             <p className="loginHeroText">
-              <strong>ENTORN DE DEMOSTRACIÓ</strong>
+              <strong>ENTORNO DE DEMOSTRACIÓN</strong>
               <br/>
-              Gestió centralitzada de
-              partits, convidats, tasques
-              i experiència VIP.
+              Gestión centralizada de
+              partidos, invitados, tareas
+              y experiencia VIP.
             </p>
 
           </div>
 
 
           <div className="loginHeroFooter">
-            4 butaques VIP · Centre Mediterrània
+            4 butacas VIP · Centro Mediterráneo
           </div>
 
         </div>
@@ -206,7 +206,7 @@ export default function LoginPage(){
         <div className="loginAccessInner">
 
           <div className="loginMobileBrand">
-            VIP EXPERIENCE DEMO · ENTORN DE DEMOSTRACIÓ
+            VIP EXPERIENCE DEMO · ENTORNO DE DEMOSTRACIÓN
           </div>
 
 
@@ -214,16 +214,16 @@ export default function LoginPage(){
 
             <div className="loginStatus">
               <span/>
-              Demostració interactiva
+              Demostración interactiva
             </div>
 
             <h2>
-              Benvingut
+              Bienvenido
             </h2>
 
             <p>
-              Crea un entorn privat amb dades fictícies
-              o identifica’t si ja tens accés.
+              Crea un entorno privado con datos ficticios
+              o identifícate si ya tienes acceso.
             </p>
 
           </div>
@@ -232,8 +232,8 @@ export default function LoginPage(){
           {inactive &&
 
             <div className="loginAlert">
-              Aquest usuari està desactivat.
-              Contacta amb un administrador.
+              Este usuario está desactivado.
+              Contacta con un administrador.
             </div>
 
           }
@@ -242,7 +242,7 @@ export default function LoginPage(){
           {expired &&
 
             <div className="loginAlert">
-              Aquesta demo ha caducat. En pots crear una de nova ara mateix.
+              Esta demo ha caducado. Puedes crear una nueva ahora mismo.
             </div>
 
           }
@@ -264,13 +264,13 @@ export default function LoginPage(){
             onClick={handleCreateDemo}
           >
             {demoLoading
-              ? 'Preparant la demo...'
-              : 'Crear la meva demo'
+              ? 'Preparando la demo...'
+              : "Crear mi demo"
             }
           </button>
 
           <div className="loginDivider">
-            <span>o entra amb el teu compte</span>
+            <span>o entra con tu cuenta</span>
           </div>
 
 
@@ -282,7 +282,7 @@ export default function LoginPage(){
             <label>
 
               <span>
-                Correu electrònic
+                Correo electrónico
               </span>
 
               <div className="loginInputWrap">
@@ -329,7 +329,7 @@ export default function LoginPage(){
                       : 'password'
                   }
                   autoComplete="current-password"
-                  placeholder="Introdueix la contrasenya"
+                  placeholder="Introdueix la contraseña"
                   value={password}
                   required
                   onChange={
@@ -353,7 +353,7 @@ export default function LoginPage(){
                 >
                   {showPassword
                     ? 'Ocultar'
-                    : 'Veure'
+                    : "Ver"
                   }
                 </button>
 
@@ -371,8 +371,8 @@ export default function LoginPage(){
               <span>
 
                 {loading
-                  ? 'Accedint...'
-                  : 'Entrar al panell'
+                  ? 'Accediendo...'
+                  : "Entrar al panel"
                 }
 
               </span>
@@ -387,7 +387,7 @@ export default function LoginPage(){
 
           <p style={{textAlign:'center',marginTop:16}}>
             <a href="/recuperar-contrasenya">
-              He oblidat la contrasenya
+              He olvidado la contraseña
             </a>
           </p>
 
@@ -398,8 +398,8 @@ export default function LoginPage(){
             </span>
 
             <p>
-              Accés restringit a
-              cada entorn privat.
+              Acceso restringit a
+              cada entorno privado.
             </p>
 
           </div>
@@ -408,7 +408,7 @@ export default function LoginPage(){
 
 
         <div className="loginVersion">
-          VIP Experience Demo · entorn de demostració
+          VIP Experience Demo · entorno de demostración
         </div>
 
       </section>

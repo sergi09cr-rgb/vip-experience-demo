@@ -14,27 +14,27 @@ import {
 
 const LABELS={
 
-  partits:'Partits',
+  partits:"Partidos",
 
-  invitacions:'Assignacions',
+  invitacions:'Asignaciones',
 
-  clients:'Clients',
+  clients:"Clientes",
 
-  comercials:'Comercials',
+  comercials:"Comerciales",
 
-  tasks:'Tasques',
+  tasks:"Tareas",
 
   task_templates:
-    'Plantilla de tasques',
+    "Plantilla de tareas",
 
   materials:'Stock',
 
   stock_movements:
-    'Moviments de stock',
+    "Movimientos de stock",
 
-  profiles:'Usuaris'
+  profiles:"Usuarios"
 
-  ,role_permissions:'Permisos per rol'
+  ,role_permissions:"Permisos por rol"
 
 }
 
@@ -48,55 +48,55 @@ const IGNORE=
 
 
 const FIELD_LABELS={
-  actiu:'Actiu',
-  accio:'Acció',
-  client_id:'Client',
+  actiu:"Activo",
+  accio:'Acción',
+  client_id:"Cliente",
   comercial_id:'Comercial',
-  partit_id:'Partit',
-  invitacio_id:'Invitació',
-  template_id:'Plantilla de tasca',
+  partit_id:"Partido",
+  invitacio_id:"Invitación",
+  template_id:"Plantilla de tarea",
   material_id:'Material',
-  user_id:'Usuari',
-  created_by:'Creat per',
-  empresa:'Client / empresa',
-  nom_client:'Nom del client',
-  nom:'Nom',
-  correu:'Correu',
-  telefon:'Telèfon',
+  user_id:"Usuario",
+  created_by:"Creado por",
+  empresa:"Cliente / empresa",
+  nom_client:"Nombre del cliente",
+  nom:"Nombre",
+  correu:"Correo",
+  telefon:"Teléfono",
   dni:'DNI',
-  data_naixement:'Data de naixement',
-  nacionalitat:'Nacionalitat',
+  data_naixement:"Fecha de nacimiento",
+  nacionalitat:"Nacionalidad",
   talla:'Talla',
-  nom_samarreta:'Nom de samarreta',
-  notes:'Notes',
+  nom_samarreta:"Nombre en la camiseta",
+  notes:"Notas",
   nota:'Nota',
   rival:'Rival',
-  competicio:'Competició',
-  data:'Data',
+  competicio:"Competición",
+  data:"Fecha",
   hora:'Hora',
-  estat_data:'Estat de la data',
-  estat_partit:'Estat del partit',
+  estat_data:"Estado de la fecha",
+  estat_partit:"Estado del partido",
   numero:'Número',
-  nom:'Nom',
-  grup:'Grup',
-  dies_offset:'Dies abans/després',
-  estat_actual:'Estat actual',
-  estat_correcte:'Estat correcte',
-  estats:'Estats seleccionables',
-  tipus:'Tipus',
-  camp_client:'Camp del client',
-  camp_comercial:'Camp del comercial',
-  ordre:'Ordre',
+  nom:"Nombre",
+  grup:"Grupo",
+  dies_offset:"Días antes/después",
+  estat_actual:"Estado actual",
+  estat_correcte:"Estado correcto",
+  estats:"Estados seleccionables",
+  tipus:"Tipo",
+  camp_client:"Campo del cliente",
+  camp_comercial:"Campo del comercial",
+  ordre:"Orden",
   activa:'Activa',
   completada:'Completada',
-  completada_manual:'Completada manualment',
-  quantitat:'Quantitat',
-  unitats:'Unitats'
+  completada_manual:"Completada manualmentee",
+  quantitat:"Cantidad",
+  unitats:"Unidades"
 
   ,rol:'Rol'
-  ,permis:'Permís'
-  ,abans:'Abans'
-  ,despres:'Després'
+  ,permis:'Permiso'
+  ,abans:"Antes"
+  ,despres:"Después"
 }
 
 
@@ -111,10 +111,23 @@ function auditActionLabel(action,table=''){
     action==='UPDATE' &&
     (!table || table==='role_permissions')
   ){
-    return 'permis_rol_actualitzat'
+    return 'Permiso de rol actualizado'
   }
 
-  return action
+  return ({
+    insert:'Creación',
+    update:'Actualización',
+    delete:'Eliminación',
+    INSERT:'Creación',
+    UPDATE:'Actualización',
+    DELETE:'Eliminación',
+    usuario_creado:'Usuario creado',
+    usuario_actualizado:'Usuario actualizado',
+    usuario_eliminado:'Usuario eliminado',
+    usuari_creat:'Usuario creado',
+    usuari_actualitzat:'Usuario actualizado',
+    usuari_eliminat:'Usuario eliminado'
+  })[action]||action
 }
 
 
@@ -122,7 +135,7 @@ function fmtDate(s){
 
   return s
     ? new Date(s)
-        .toLocaleString('ca-ES')
+        .toLocaleString('es-ES')
     : '—'
 
 }
@@ -420,7 +433,7 @@ export default function HistoryClient({
       supabase
         .from('profiles')
         .select(
-          'id,email,nom,rol,actiu'
+          "id,email,nom,rol,activo"
         ),
 
       supabase
@@ -703,7 +716,7 @@ export default function HistoryClient({
 
     return label
       ? label[0].toUpperCase()+label.slice(1)
-      : 'Camp'
+      : 'Campo'
   }
 
 
@@ -723,13 +736,13 @@ export default function HistoryClient({
 
       return client?.empresa||
         client?.nom_client||
-        'Client eliminat o no disponible'
+        "Cliente eliminado o no disponible"
     }
 
     if(key==='comercial_id'){
       return historicalMaps
         .comercials[value]?.nom||
-        'Comercial eliminat o no disponible'
+        'Comercial eliminado o no disponible'
     }
 
     if(key==='partit_id'){
@@ -737,8 +750,8 @@ export default function HistoryClient({
         historicalMaps.partits[value]
 
       return match?.rival
-        ? `Club Mediterrània · ${match.rival}`
-        : 'Partit eliminat o no disponible'
+        ? `Club Mediterráneo · ${match.rival}`
+        : "Partido eliminado o no disponible"
     }
 
     if(key==='template_id'){
@@ -750,7 +763,7 @@ export default function HistoryClient({
     if(key==='material_id'){
       return historicalMaps
         .materials[value]?.nom||
-        'Material eliminat o no disponible'
+        'Material eliminado o no disponible'
     }
 
     if(
@@ -762,7 +775,7 @@ export default function HistoryClient({
 
       return profile?.nom||
         profile?.email||
-        'Usuari eliminat o no disponible'
+        "Usuario eliminado o no disponible"
     }
 
     if(key==='invitacio_id'){
@@ -771,7 +784,7 @@ export default function HistoryClient({
         historicalMaps.invitacions[value]
 
       if(!invitation){
-        return 'Invitació eliminada o no disponible'
+        return "Invitación eliminada o no disponible"
       }
 
       const match=
@@ -781,12 +794,12 @@ export default function HistoryClient({
       return [
         match?.rival,
         invitation.numero
-          ? `Invitació ${invitation.numero}`
+          ? `Invitación ${invitation.numero}`
           : null
       ]
         .filter(Boolean)
         .join(' · ')
-        || 'Invitació'
+        || "Invitación"
     }
 
     return printable(value)
@@ -864,7 +877,7 @@ export default function HistoryClient({
     if(row.taula==='partits'){
 
       if(data?.rival){
-        return `Club Mediterrània · ${data.rival}`
+        return `Club Mediterráneo · ${data.rival}`
       }
 
     }
@@ -952,7 +965,7 @@ export default function HistoryClient({
 
       if(inv?.numero){
         parts.push(
-          `Invitació ${inv.numero}`
+          `Invitación ${inv.numero}`
         )
       }
 
@@ -1113,11 +1126,11 @@ export default function HistoryClient({
       const correct=task?.estat_correcte||''
 
       const defaults={
-        'Preparat':['No preparat','Preparant-se','Preparat'],
-        'Enviat':['No preparat','Preparat','Enviat'],
-        'Rebut':['No rebut','Rebut'],
-        'Entregat comercial':['No entregat','Preparant-se','Entregat comercial'],
-        'Respost':['No enviat','Enviat','Respost']
+        "Preparado":["No preparado","Preparándose","Preparado"],
+        'Enviado':["No preparado","Preparado",'Enviado'],
+        'Recibido':['No recibido','Recibido'],
+        "Entregado comercial":["No entregado","Preparándose","Entregado comercial"],
+        'Respondido':['No enviado','Enviado','Respondido']
       }
 
       options=[...(defaults[correct]||[])]
@@ -1212,7 +1225,7 @@ export default function HistoryClient({
     ){
       setTaskEditor(current=>({
         ...current,
-        error:'Primer cal assignar o crear el client.'
+        error:"Primero hay que asignar o crear el cliente."
       }))
       return
     }
@@ -1281,7 +1294,7 @@ export default function HistoryClient({
           auditActionLabel(a)
             .localeCompare(
               auditActionLabel(b),
-              'ca'
+              'es'
             )
       ),
       [rows]
@@ -1478,7 +1491,7 @@ export default function HistoryClient({
             textAlign:'center'
           }}
         >
-          Pàgina {currentPage} de {pageCount}
+          Página {currentPage} de {pageCount}
           {' · '}
           {visible.length} canvis
         </span>
@@ -1500,7 +1513,7 @@ export default function HistoryClient({
             })
           }}
         >
-          Següent →
+          Siguiente →
         </button>
 
       </div>
@@ -1522,13 +1535,13 @@ export default function HistoryClient({
 
     const rangeLabel=
       filters.from || filters.to
-        ? `del període seleccionat (${dateRows.length} registres)`
-        : `complet (${rows.length} registres)`
+        ? `del periodo seleccionado (${dateRows.length} registros)`
+        : `completo (${rows.length} registros)`
 
 
     if(
       !confirm(
-        `Segur que vols esborrar l’historial ${rangeLabel}?\n\nAquesta acció no es pot desfer.`
+        `¿Seguro que quieres borrar el historial ${rangeLabel}?\n\nEsta acción no se puede deshacer.`
       )
     )return
 
@@ -1622,8 +1635,8 @@ export default function HistoryClient({
         <h1>Historial</h1>
 
         <p className="muted">
-          Registre de canvis realitzats
-          a l'aplicació.
+          Registre de cambios realitzats
+          en la aplicación.
         </p>
 
       </div>
@@ -1641,7 +1654,7 @@ export default function HistoryClient({
           disabled={loading}
           onClick={load}
         >
-          Actualitzar
+          Actualizar
         </button>
 
         {permissions.history_clear&&
@@ -1653,7 +1666,7 @@ export default function HistoryClient({
             }
             onClick={clearHistory}
           >
-            Esborrar historial
+            Borrar historial
           </button>
         }
 
@@ -1677,7 +1690,7 @@ export default function HistoryClient({
         >
 
           <option value="all">
-            Tots els usuaris
+            Todos los usuarios
           </option>
 
           {profiles.map(profile=>
@@ -1705,7 +1718,7 @@ export default function HistoryClient({
         >
 
           <option value="all">
-            Tots els apartats
+            Todos los apartats
           </option>
 
           {tables.map(table=>
@@ -1732,7 +1745,7 @@ export default function HistoryClient({
         >
 
           <option value="all">
-            Totes les accions
+            Todas las acciones
           </option>
 
           {actions.map(action=>
@@ -1747,7 +1760,7 @@ export default function HistoryClient({
 
 
         <input
-          placeholder="Buscar canvi..."
+          placeholder="Buscar cambio..."
           value={filters.q}
           onChange={e=>
             updateFilters({
@@ -1839,7 +1852,7 @@ export default function HistoryClient({
       {loading
 
         ? <div className="empty">
-            Carregant historial...
+            Cargando historial...
           </div>
 
         : <div className="historyList">
@@ -1905,7 +1918,7 @@ export default function HistoryClient({
                     <span>
                       {permissions.history_actor
                         ? actor?.nom||actor?.email||'Sistema'
-                        : 'Usuari de l’aplicació'
+                        : "Usuario de la aplicación"
                       }
                     </span>
 
@@ -1960,11 +1973,11 @@ export default function HistoryClient({
 
                           <tr>
 
-                            <th>Camp</th>
+                            <th>Campo</th>
 
-                            <th>Abans</th>
+                            <th>Antes</th>
 
-                            <th>Després</th>
+                            <th>Después</th>
 
                           </tr>
 
@@ -2030,8 +2043,8 @@ export default function HistoryClient({
           {!visible.length &&
 
             <div className="empty">
-              No hi ha canvis amb
-              aquests filtres.
+              No hay cambios con
+              estos filtros.
             </div>
 
           }
@@ -2067,7 +2080,7 @@ export default function HistoryClient({
           }}
         >
 
-          <h2>Editar tasca</h2>
+          <h2>Editar tarea</h2>
 
           <div
             className="detailGrid"
@@ -2077,12 +2090,12 @@ export default function HistoryClient({
           >
 
             <div>
-              <span className="muted">Tasca</span>
+              <span className="muted">Tarea</span>
               <div><b>{editedTask.nom}</b></div>
             </div>
 
             <div>
-              <span className="muted">Partit</span>
+              <span className="muted">Partido</span>
               <div>
                 <b>{editedMatch?.rival||'—'}</b>
                 {editedMatch?.data
@@ -2093,11 +2106,11 @@ export default function HistoryClient({
             </div>
 
             <div>
-              <span className="muted">Client</span>
+              <span className="muted">Cliente</span>
               <div>
                 {editedClient?.empresa||
                  editedClient?.nom_client||
-                 'Client pendent'}
+                 "Cliente pendiente"}
               </div>
             </div>
 
@@ -2105,12 +2118,12 @@ export default function HistoryClient({
               <span className="muted">Comercial</span>
               <div>
                 {editedCommercial?.nom||
-                 'Comercial pendent'}
+                 "Comercial pendiente"}
               </div>
             </div>
 
             <div>
-              <span className="muted">Estat correcte</span>
+              <span className="muted">Estado correcto</span>
               <div>{editedTask.estat_correcte||'—'}</div>
             </div>
 
@@ -2119,7 +2132,7 @@ export default function HistoryClient({
 
           <label className="field">
 
-            <span>Estat actual</span>
+            <span>Estado actual</span>
 
             <select
               value={taskEditor.status}
@@ -2163,7 +2176,7 @@ export default function HistoryClient({
               disabled={taskEditor.saving}
               onClick={()=>setTaskEditor(null)}
             >
-              Cancel·lar
+              Cancelar
             </button>
 
             <button
@@ -2208,7 +2221,7 @@ function fmtDateOnly(value){
 
   return Number.isNaN(+date)
     ? String(value)
-    : date.toLocaleDateString('ca-ES')
+    : date.toLocaleDateString('es-ES')
 }
 
 
@@ -2224,7 +2237,7 @@ function normalizeSearch(value=''){
 function normalizeStatus(value=''){
   return String(value)
     .trim()
-    .toLocaleLowerCase('ca')
+    .toLocaleLowerCase('es')
 }
 
 

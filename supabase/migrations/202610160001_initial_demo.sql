@@ -105,8 +105,8 @@ create table public.partits (
   competicio text,
   data date,
   hora time,
-  estat_data text not null default 'Pendent' check (estat_data in ('Pendent','Provisional','Confirmada')),
-  estat_partit text not null default 'Planificat' check (estat_partit in ('Planificat','Jugat','Cancel·lat')),
+  estat_data text not null default 'Pendiente' check (estat_data in ('Pendiente','Provisional','Confirmada')),
+  estat_partit text not null default 'Planificado' check (estat_partit in ('Planificado','Jugado','Cancelado')),
   notes text,
   created_at timestamptz not null default now(),
   unique (workspace_id,id)
@@ -181,7 +181,7 @@ create table public.stock_movements (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null default public.current_workspace_id() references public.workspaces(id) on delete cascade,
   material_id uuid not null,
-  tipus text not null check (tipus in ('Entrada','Sortida')),
+  tipus text not null check (tipus in ('Entrada','Salida')),
   unitats integer not null check (unitats>0),
   partit_id uuid,
   client_id uuid,
@@ -190,7 +190,7 @@ create table public.stock_movements (
   created_at timestamptz not null default now(),
   nota text,
   unique (workspace_id,id),
-  check (tipus='Sortida' or nota is null),
+  check (tipus='Salida' or nota is null),
   foreign key (workspace_id,material_id) references public.materials(workspace_id,id) on delete cascade,
   foreign key (workspace_id,partit_id) references public.partits(workspace_id,id) on delete set null (partit_id),
   foreign key (workspace_id,client_id) references public.clients(workspace_id,id) on delete set null (client_id),
@@ -299,20 +299,34 @@ declare
   commercial_one uuid:=gen_random_uuid();
   commercial_two uuid:=gen_random_uuid();
   commercial_three uuid:=gen_random_uuid();
+  commercial_four uuid:=gen_random_uuid();
+  commercial_five uuid:=gen_random_uuid();
   client_one uuid:=gen_random_uuid();
   client_two uuid:=gen_random_uuid();
   client_three uuid:=gen_random_uuid();
   client_four uuid:=gen_random_uuid();
+  client_five uuid:=gen_random_uuid();
+  client_six uuid:=gen_random_uuid();
+  client_seven uuid:=gen_random_uuid();
+  client_eight uuid:=gen_random_uuid();
+  client_nine uuid:=gen_random_uuid();
+  client_ten uuid:=gen_random_uuid();
   match_one uuid:=gen_random_uuid();
   match_two uuid:=gen_random_uuid();
   match_three uuid:=gen_random_uuid();
-  invite_one uuid:=gen_random_uuid();
-  invite_two uuid:=gen_random_uuid();
-  template_row record;
-  match_row record;
+  match_four uuid:=gen_random_uuid();
+  match_five uuid:=gen_random_uuid();
+  match_six uuid:=gen_random_uuid();
+  match_seven uuid:=gen_random_uuid();
   material_scarf uuid:=gen_random_uuid();
   material_box uuid:=gen_random_uuid();
   material_ribbon uuid:=gen_random_uuid();
+  material_pass uuid:=gen_random_uuid();
+  material_bag uuid:=gen_random_uuid();
+  material_pin uuid:=gen_random_uuid();
+  material_card uuid:=gen_random_uuid();
+  template_row record;
+  match_row record;
 begin
   insert into public.role_permissions(workspace_id,role,permission,allowed)
   select p_workspace_id,role_name,permission_name,
@@ -348,39 +362,62 @@ begin
 
   insert into public.comercials(id,workspace_id,nom,dni,telefon,correu,data_naixement,talla,nom_samarreta)
   values
-    (commercial_one,p_workspace_id,'Alex Serra','DEMO-COM-001','DEMO-600-001','alex.serra@example.com','1990-04-12','M','ALEX'),
+    (commercial_one,p_workspace_id,'Álex Serra','DEMO-COM-001','DEMO-600-001','alex.serra@example.com','1990-04-12','M','ALEX'),
     (commercial_two,p_workspace_id,'Nora Vidal','DEMO-COM-002','DEMO-600-002','nora.vidal@example.com','1987-09-23','S','NORA'),
-    (commercial_three,p_workspace_id,'Marc Soler','DEMO-COM-003','DEMO-600-003','marc.soler@example.com','1993-02-08','L','MARC');
+    (commercial_three,p_workspace_id,'Marc Soler','DEMO-COM-003','DEMO-600-003','marc.soler@example.com','1993-02-08','L','MARC'),
+    (commercial_four,p_workspace_id,'Clara Ibáñez','DEMO-COM-004','DEMO-600-004','clara.ibanez@example.com','1989-06-19','M','CLARA'),
+    (commercial_five,p_workspace_id,'Hugo Rivas','DEMO-COM-005','DEMO-600-005','hugo.rivas@example.com','1992-12-03','XL','HUGO');
 
   insert into public.clients(id,workspace_id,empresa,nom_client,comercial_id,telefon,correu,dni,nacionalitat,data_naixement,talla,nom_samarreta,notes)
   values
-    (client_one,p_workspace_id,'Mediterrània Tech Demo SL','Laia Costa',commercial_one,'DEMO-700-001','laia.costa@example.com','DEMO-CLI-001','Espanyola','1991-05-17','M','LAIA','Dades completament fictícies.'),
-    (client_two,p_workspace_id,'Llevant Creatiu Demo SL','Pau Ferrer',commercial_two,'DEMO-700-002','pau.ferrer@example.com','DEMO-CLI-002','Espanyola','1988-11-02','L','PAU','Dades completament fictícies.'),
-    (client_three,p_workspace_id,'Nord Events Demo SL','Iris Martín',commercial_one,'DEMO-700-003','iris.martin@example.com','DEMO-CLI-003','Espanyola','1994-01-28','S','IRIS','Dades completament fictícies.'),
-    (client_four,p_workspace_id,'Rambla Digital Demo SL','Nil Roca',commercial_three,'DEMO-700-004','nil.roca@example.com','DEMO-CLI-004','Espanyola','1985-07-06','XL','NIL','Dades completament fictícies.');
+    (client_one,p_workspace_id,'Mediterránea Tech Demo SL','Laia Costa',commercial_one,'DEMO-700-001','laia.costa@example.com','DEMO-CLI-001','Española','1991-05-17','M','LAIA','Datos completamente ficticios.'),
+    (client_two,p_workspace_id,'Levante Creativo Demo SL','Pau Ferrer',commercial_two,'DEMO-700-002','pau.ferrer@example.com','DEMO-CLI-002','Española','1988-11-02','L','PAU','Datos completamente ficticios.'),
+    (client_three,p_workspace_id,'Norte Eventos Demo SL','Iris Martín',commercial_one,'DEMO-700-003','iris.martin@example.com','DEMO-CLI-003','Española','1994-01-28','S','IRIS','Datos completamente ficticios.'),
+    (client_four,p_workspace_id,'Rambla Digital Demo SL','Nil Roca',commercial_three,'DEMO-700-004','nil.roca@example.com','DEMO-CLI-004','Española','1985-07-06','XL','NIL','Datos completamente ficticios.'),
+    (client_five,p_workspace_id,'Horizonte Legal Demo SL','Vera Santos',commercial_four,'DEMO-700-005','vera.santos@example.com','DEMO-CLI-005','Portuguesa','1990-03-15','M','VERA','Datos completamente ficticios.'),
+    (client_six,p_workspace_id,'Órbita Media Demo SL','Leo Navarro',commercial_five,'DEMO-700-006','leo.navarro@example.com','DEMO-CLI-006','Española','1986-08-21','L','LEO','Datos completamente ficticios.'),
+    (client_seven,p_workspace_id,'Atlas Ingeniería Demo SA','Emma Ruiz',commercial_two,'DEMO-700-007','emma.ruiz@example.com','DEMO-CLI-007','Francesa','1992-10-09','S','EMMA','Datos completamente ficticios.'),
+    (client_eight,p_workspace_id,'Costa Salud Demo SL','Bruno Gil',commercial_three,'DEMO-700-008','bruno.gil@example.com','DEMO-CLI-008','Española','1989-02-24','XXL','BRUNO','Datos completamente ficticios.'),
+    (client_nine,p_workspace_id,'Vertex Consultoría Demo SL','Olivia Cano',commercial_four,'DEMO-700-009','olivia.cano@example.com','DEMO-CLI-009','Italiana','1995-07-31','M','OLIVIA','Datos completamente ficticios.'),
+    (client_ten,p_workspace_id,'Prisma Retail Demo SL','Martín Vega',commercial_five,'DEMO-700-010','martin.vega@example.com','DEMO-CLI-010','Española','1987-04-04','L','MARTIN','Datos completamente ficticios.');
 
   insert into public.partits(id,workspace_id,rival,competicio,data,hora,estat_data,estat_partit,notes)
   values
-    (match_one,p_workspace_id,'Atlètic Marina','Lliga Demo',current_date+7,'18:30','Confirmada','Planificat','Esdeveniment sintètic de demostració.'),
-    (match_two,p_workspace_id,'Unió del Nord','Copa Demo',current_date+21,'20:00','Confirmada','Planificat','Esdeveniment sintètic de demostració.'),
-    (match_three,p_workspace_id,'Ciutat Esportiva','Lliga Demo',current_date-14,'19:00','Confirmada','Jugat','Esdeveniment sintètic de demostració.');
+    (match_one,p_workspace_id,'Ciudad Deportiva','Liga Demo',current_date-28,'19:00','Confirmada','Jugado','Evento sintético de demostración.'),
+    (match_two,p_workspace_id,'Atlético Marina','Liga Demo',current_date-11,'18:30','Confirmada','Jugado','Evento sintético de demostración.'),
+    (match_three,p_workspace_id,'Unión del Norte','Liga Demo',current_date+4,'20:00','Confirmada','Planificado','Próximo evento de demostración.'),
+    (match_four,p_workspace_id,'Real Montaña','Copa Demo',current_date+10,'21:00','Confirmada','Planificado','Evento sintético de demostración.'),
+    (match_five,p_workspace_id,'Sporting Central','Liga Demo',current_date+20,'18:00','Confirmada','Planificado','Evento sintético de demostración.'),
+    (match_six,p_workspace_id,'Puerto Azul','Copa Demo',current_date+34,'19:30','Confirmada','Cancelado','Cancelado para mostrar los distintos estados.'),
+    (match_seven,p_workspace_id,'Valle Unido','Liga Demo',current_date+49,'20:30','Provisional','Planificado','Fecha provisional de demostración.');
 
-  insert into public.invitacions(id,workspace_id,partit_id,numero,comercial_id,client_id)
+  insert into public.invitacions(workspace_id,partit_id,numero,comercial_id,client_id)
   values
-    (invite_one,p_workspace_id,match_one,1,commercial_one,client_one),
-    (invite_two,p_workspace_id,match_one,2,commercial_two,client_two),
-    (gen_random_uuid(),p_workspace_id,match_two,1,commercial_one,client_three),
-    (gen_random_uuid(),p_workspace_id,match_two,2,commercial_three,client_four),
-    (gen_random_uuid(),p_workspace_id,match_three,1,commercial_two,client_two),
-    (gen_random_uuid(),p_workspace_id,match_three,2,commercial_one,client_one);
+    (p_workspace_id,match_one,1,commercial_one,client_one),
+    (p_workspace_id,match_one,2,commercial_two,client_two),
+    (p_workspace_id,match_two,1,commercial_three,client_three),
+    (p_workspace_id,match_two,2,commercial_four,client_four),
+    (p_workspace_id,match_three,1,commercial_one,client_five),
+    (p_workspace_id,match_three,2,commercial_five,client_six),
+    (p_workspace_id,match_four,1,commercial_two,client_seven),
+    (p_workspace_id,match_four,2,commercial_three,client_eight),
+    (p_workspace_id,match_five,1,commercial_four,client_nine),
+    (p_workspace_id,match_five,2,commercial_five,client_ten),
+    (p_workspace_id,match_six,1,commercial_one,client_three),
+    (p_workspace_id,match_six,2,commercial_four,client_seven),
+    (p_workspace_id,match_seven,1,commercial_two,client_one),
+    (p_workspace_id,match_seven,2,commercial_five,client_nine);
 
   insert into public.task_templates(workspace_id,nom,grup,dies_offset,estat_correcte,tipus,ordre,estats,responsable)
   values
-    (p_workspace_id,'Confirmar assistència','Pre partit',-6,'Confirmada','estat',10,array['Pendent','Contactat','Confirmada'],'Alex'),
-    (p_workspace_id,'Validar dades del convidat','Dades',-5,'Validat','estat',20,array['Pendent','En revisió','Validat'],'Nora'),
-    (p_workspace_id,'Preparar acreditació','Pre partit',-2,'Preparada','estat',30,array['Pendent','En preparació','Preparada'],'Marc'),
-    (p_workspace_id,'Entregar obsequi VIP','Regals',0,'Entregat','estat',40,array['Pendent','Preparat','Entregat'],'Alex'),
-    (p_workspace_id,'Confirmar recepció','Post partit',1,'Confirmada','estat',50,array['Pendent','Confirmada'],'Nora');
+    (p_workspace_id,'Confirmar asistencia','Pre partido',-7,'Confirmada','estat',10,array['Pendiente','Contactado','Confirmada'],'Lucía Martín'),
+    (p_workspace_id,'Validar datos del invitado','Datos',-6,'Validado','estat',20,array['Pendiente','En revisión','Validado'],'Diego Ruiz'),
+    (p_workspace_id,'Revisar talla de camiseta','Datos',-5,'Validada','estat',30,array['Pendiente','Consultada','Validada'],'Elena Soto'),
+    (p_workspace_id,'Preparar acreditación','Pre partido',-3,'Preparada','estat',40,array['Pendiente','En preparación','Preparada'],'Lucía Martín'),
+    (p_workspace_id,'Preparar obsequio VIP','Regalos',-2,'Preparado','estat',50,array['No preparado','Preparándose','Preparado'],'Diego Ruiz'),
+    (p_workspace_id,'Confirmar documentación','Pre partido',-1,'Confirmada','estat',60,array['Pendiente','En revisión','Confirmada'],'Elena Soto'),
+    (p_workspace_id,'Registrar entrega de regalos','Regalos',0,'Entregado','estat',70,array['Pendiente','Preparado','Entregado'],'Lucía Martín'),
+    (p_workspace_id,'Confirmar recepción','Post partido',1,'Confirmada','estat',80,array['Pendiente','Confirmada'],'Diego Ruiz');
 
   for match_row in
     select i.id as invitation_id,i.partit_id,p.data
@@ -397,27 +434,49 @@ begin
       ) values (
         p_workspace_id,match_row.partit_id,match_row.invitation_id,template_row.id,
         template_row.nom,template_row.grup,match_row.data+coalesce(template_row.dies_offset,0),
-        template_row.estats[1],template_row.estat_correcte,
+        case when match_row.data<current_date then template_row.estat_correcte else template_row.estats[1] end,
+        template_row.estat_correcte,
         match_row.data<current_date
       );
     end loop;
   end loop;
 
+  update public.tasks
+  set estat_actual=estat_correcte,completada=true,updated_at=now()-interval '1 day'
+  where workspace_id=p_workspace_id
+    and partit_id=match_three
+    and nom in ('Confirmar asistencia','Validar datos del invitado','Revisar talla de camiseta');
+
+  update public.tasks
+  set estat_actual='En preparación',updated_at=now()-interval '4 hours'
+  where workspace_id=p_workspace_id
+    and partit_id=match_three
+    and nom='Preparar acreditación';
+
   insert into public.materials(id,workspace_id,nom,quantitat)
   values
-    (material_scarf,p_workspace_id,'Bufandes',24),
-    (material_box,p_workspace_id,'Caixes',18),
-    (material_ribbon,p_workspace_id,'Llaços',12);
+    (material_scarf,p_workspace_id,'Bufandas',24),
+    (material_box,p_workspace_id,'Cajas de regalo',18),
+    (material_ribbon,p_workspace_id,'Lazos',4),
+    (material_pass,p_workspace_id,'Acreditaciones',16),
+    (material_bag,p_workspace_id,'Bolsas premium',10),
+    (material_pin,p_workspace_id,'Pines conmemorativos',3),
+    (material_card,p_workspace_id,'Tarjetas de bienvenida',30);
 
   insert into public.stock_movements(workspace_id,material_id,tipus,unitats,created_at)
   values
-    (p_workspace_id,material_scarf,'Entrada',24,now()-interval '5 days'),
-    (p_workspace_id,material_box,'Entrada',18,now()-interval '5 days'),
-    (p_workspace_id,material_ribbon,'Entrada',12,now()-interval '5 days');
+    (p_workspace_id,material_scarf,'Entrada',24,now()-interval '12 days'),
+    (p_workspace_id,material_box,'Entrada',18,now()-interval '12 days'),
+    (p_workspace_id,material_ribbon,'Entrada',4,now()-interval '10 days'),
+    (p_workspace_id,material_pass,'Entrada',16,now()-interval '9 days'),
+    (p_workspace_id,material_bag,'Entrada',10,now()-interval '8 days'),
+    (p_workspace_id,material_pin,'Entrada',3,now()-interval '7 days'),
+    (p_workspace_id,material_card,'Entrada',30,now()-interval '6 days');
 
   delete from public.audit_log where workspace_id=p_workspace_id;
 end;
 $$;
+
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -446,10 +505,10 @@ begin
     delete from public.pending_invites where id=pending.id;
   else
     insert into public.workspaces(name,owner_user_id)
-    values ('Entorn demo '||upper(substr(new.id::text,1,6)),new.id)
+    values ('Entorno demo '||upper(substr(new.id::text,1,6)),new.id)
     returning id into target_workspace;
     target_role:='superadmin';
-    target_name:=coalesce(new.raw_user_meta_data->>'nom',new.email,'Visitant demo');
+    target_name:=coalesce(new.raw_user_meta_data->>'nom',new.email,'Visitante demo');
   end if;
 
   insert into public.profiles(id,workspace_id,email,nom,rol,actiu)
@@ -518,7 +577,7 @@ declare initial_state text;
 begin
   if coalesce(btrim(new.estat_actual),'')='' then
     select tt.estats[1] into initial_state from public.task_templates tt
-    where tt.id=new.template_id and tt.workspace_id=new.workspace_id and tt.grup='Regals' and tt.tipus='estat';
+    where tt.id=new.template_id and tt.workspace_id=new.workspace_id and tt.grup='Regalos' and tt.tipus='estat';
     if coalesce(btrim(initial_state),'')<>'' then new.estat_actual:=initial_state; end if;
   end if;
   return new;
@@ -537,7 +596,7 @@ begin
       on t.id=new.template_id and t.workspace_id=new.workspace_id
     where i.id=new.invitacio_id and i.workspace_id=new.workspace_id;
     if assigned_client is null and not is_commercial_assignment then
-      raise exception 'Primer cal assignar o crear el client.' using errcode='23514';
+      raise exception 'Primero hay que asignar o crear el cliente.' using errcode='23514';
     end if;
   end if;
   return new;
@@ -573,7 +632,7 @@ create or replace function public.touch_last_access()
 returns void language plpgsql security definer set search_path='' as $$
 declare tenant_id uuid:=public.current_workspace_id();
 begin
-  if auth.uid() is null or tenant_id is null then raise exception 'No autenticat' using errcode='42501'; end if;
+  if auth.uid() is null or tenant_id is null then raise exception 'No autenticado' using errcode='42501'; end if;
   insert into public.user_access(user_id,workspace_id,last_access_at)
   values(auth.uid(),tenant_id,now())
   on conflict(user_id) do update set workspace_id=excluded.workspace_id,last_access_at=excluded.last_access_at;
@@ -585,7 +644,7 @@ create or replace function public.clear_audit_log(p_from timestamptz default nul
 returns bigint language plpgsql security definer set search_path='' as $$
 declare deleted_rows bigint; tenant_id uuid:=public.current_workspace_id();
 begin
-  if not public.has_permission('history_clear') then raise exception 'No tens permís per esborrar l historial' using errcode='42501'; end if;
+  if not public.has_permission('history_clear') then raise exception 'No tienes permiso para borrar el historial' using errcode='42501'; end if;
   delete from public.audit_log h where h.workspace_id=tenant_id
     and (p_from is null or h.created_at>=p_from) and (p_to is null or h.created_at<=p_to);
   get diagnostics deleted_rows=row_count; return deleted_rows;
@@ -596,7 +655,7 @@ create or replace function public.reset_demo_workspace()
 returns void language plpgsql security definer set search_path='' as $$
 declare tenant_id uuid:=public.current_workspace_id();
 begin
-  if tenant_id is null or not public.is_superadmin() then raise exception 'No autoritzat' using errcode='42501'; end if;
+  if tenant_id is null or not public.is_superadmin() then raise exception 'No autorizado' using errcode='42501'; end if;
   delete from public.stock_movements where workspace_id=tenant_id;
   delete from public.tasks where workspace_id=tenant_id;
   delete from public.invitacions where workspace_id=tenant_id;
@@ -711,7 +770,7 @@ create policy materials_update on public.materials for update to authenticated u
 create policy materials_delete on public.materials for delete to authenticated using(workspace_id=public.current_workspace_id() and public.has_permission('materials_delete'));
 
 create policy movements_select on public.stock_movements for select to authenticated using(workspace_id=public.current_workspace_id());
-create policy movements_insert on public.stock_movements for insert to authenticated with check(workspace_id=public.current_workspace_id() and ((tipus='Entrada' and public.has_permission('stock_entry')) or (tipus='Sortida' and public.has_permission('stock_exit'))));
+create policy movements_insert on public.stock_movements for insert to authenticated with check(workspace_id=public.current_workspace_id() and ((tipus='Entrada' and public.has_permission('stock_entry')) or (tipus='Salida' and public.has_permission('stock_exit'))));
 create policy movements_update on public.stock_movements for update to authenticated using(workspace_id=public.current_workspace_id() and (public.has_permission('stock_entry') or public.has_permission('stock_exit'))) with check(workspace_id=public.current_workspace_id());
 create policy movements_delete on public.stock_movements for delete to authenticated using(workspace_id=public.current_workspace_id() and public.has_permission('stock_movement_delete'));
 

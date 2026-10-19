@@ -39,7 +39,7 @@ export default function UpdatePasswordPage(){
 
         if(params.has('error')){
           throw new Error(
-            'L’enllaç no és vàlid o ha caducat. Demana un nou enllaç.'
+            "El enlace no es válido o ha caducado. Solicita un nuevo enlace."
           )
         }
 
@@ -48,7 +48,7 @@ export default function UpdatePasswordPage(){
 
         if(sessionError || !data.user){
           throw new Error(
-            'Obre l’enllaç del correu per establir la contrasenya, o inicia sessió.'
+            "Abre el enlace del correo por establir la contraseña, o inicia sesión."
           )
         }
 
@@ -61,7 +61,7 @@ export default function UpdatePasswordPage(){
 
         if(!cancelled){
           setError(
-            e.message||'No s’ha pogut comprovar la sessió.'
+            e.message||"No se ha podido comprobar la sesión."
           )
         }
 
@@ -93,7 +93,7 @@ export default function UpdatePasswordPage(){
 
     if(password.length<8){
       setError(
-        'La contrasenya ha de tenir com a mínim 8 caràcters.'
+        "La contraseña debe tener como mínimo 8 caracteres."
       )
       return
     }
@@ -119,7 +119,7 @@ export default function UpdatePasswordPage(){
         setAccount(null)
 
         throw new Error(
-          'La sessió ha canviat o ha caducat. Torna a obrir l’enllaç del correu.'
+          "La sesión ha cambiado o ha caducado. Vuelve a abrir el enlace del correo."
         )
       }
 
@@ -138,7 +138,7 @@ export default function UpdatePasswordPage(){
     catch(e){
 
       setError(
-        e.message||'No s’ha pogut desar la contrasenya.'
+        e.message||"No se ha podido guardar la contraseña."
       )
 
     }
@@ -171,10 +171,10 @@ export default function UpdatePasswordPage(){
           VIP Experience Demo
         </p>
 
-        <h1>Estableix la contrasenya</h1>
+        <h1>Estableix la contraseña</h1>
 
         {checking && (
-          <p role="status">Comprovant l’accés...</p>
+          <p role="status">Comprobando el acceso...</p>
         )}
 
         {error && (
@@ -186,11 +186,11 @@ export default function UpdatePasswordPage(){
         {done ? (
           <div>
             <p role="status">
-              Contrasenya desada correctament.
+              Contraseña guardada correctamente.
             </p>
 
             <a className="btn primary" href="/dashboard">
-              Entrar al panell
+              Entrar al panel
             </a>
           </div>
         ) : (
@@ -204,7 +204,7 @@ export default function UpdatePasswordPage(){
               </p>
 
               <label className="field full">
-                <span>Nova contrasenya</span>
+                <span>Nueva contraseña</span>
 
                 <input
                   type="password"
@@ -218,7 +218,7 @@ export default function UpdatePasswordPage(){
               </label>
 
               <label className="field full">
-                <span>Repeteix la contrasenya</span>
+                <span>Repeteix la contraseña</span>
 
                 <input
                   type="password"
@@ -238,8 +238,8 @@ export default function UpdatePasswordPage(){
                   disabled={saving}
                 >
                   {saving
-                    ? 'Desant...'
-                    : 'Desar contrasenya'
+                    ? 'Guardando...'
+                    : "Guardar contraseña"
                   }
                 </button>
               </div>
@@ -249,7 +249,7 @@ export default function UpdatePasswordPage(){
 
         {!checking && !account && (
           <p>
-            <a href="/login">Tornar a l’inici de sessió</a>
+            <a href="/login">Volver al inicio de sesión</a>
           </p>
         )}
       </section>

@@ -50,7 +50,7 @@ async function requireApiAdmin(permission=null){
 
     return {
       error:NextResponse.json(
-        {error:'No autenticat'},
+        {error:'No autenticado'},
         {status:401}
       )
     }
@@ -62,7 +62,7 @@ async function requireApiAdmin(permission=null){
     error
   }=await supabase
     .from('profiles')
-    .select('id,workspace_id,rol,actiu')
+    .select("id,workspace_id,rol,activo")
     .eq('id',user.id)
     .maybeSingle()
 
@@ -74,7 +74,7 @@ async function requireApiAdmin(permission=null){
 
     return {
       error:NextResponse.json(
-        {error:'No autoritzat'},
+        {error:'No autorizado'},
         {status:403}
       )
     }
@@ -99,7 +99,7 @@ async function requireApiAdmin(permission=null){
     if(!checks.some(result=>result.data===true)){
       return {
         error:NextResponse.json(
-          {error:'No autoritzat'},
+          {error:'No autorizado'},
           {status:403}
         )
       }
@@ -149,7 +149,7 @@ export async function GET(){
       admin
         .from('profiles')
         .select(
-          'id,workspace_id,email,nom,rol,actiu,created_at'
+          "id,workspace_id,email,nom,rol,activo,created_at"
         )
         .eq('workspace_id',auth.profile.workspace_id),
       admin
@@ -295,7 +295,7 @@ export async function POST(request){
 
     if(canCreate!==true){
       return NextResponse.json(
-        {error:'No tens permís per crear aquest rol'},
+        {error:"No tienes permiso para crear este rol"},
         {status:403}
       )
     }
@@ -308,7 +308,7 @@ export async function POST(request){
       return NextResponse.json(
         {
           error:
-            'Només un superadmin pot crear un altre superadmin'
+            "Solo un superadministrador puede crear otro superadministrador"
         },
         {
           status:403
@@ -344,7 +344,7 @@ export async function POST(request){
     ){
 
       return NextResponse.json(
-        {error:'Indica un correu electrònic vàlid'},
+        {error:"Indica un correo electrónico válido"},
         {status:400}
       )
 
@@ -419,7 +419,7 @@ export async function POST(request){
       return NextResponse.json(
         {
           error:
-            'La invitació s’ha tramitat, però no s’ha pogut completar la configuració del perfil. No activis el compte fins que hagis comprovat i desat el rol correcte. Revisa l’usuari abans de tornar a convidar-lo.'
+            "La invitación se ha tramitado, pero no se ha podido completar la configuración del perfil. No actives la cuenta hasta que hayas comprobado y guardado el rol correcto. Revisa el usuario antes de volver a invitarlo."
         },
         {status:500}
       )
@@ -437,7 +437,7 @@ export async function POST(request){
 
         registre_id:userId,
 
-        accio:'usuari_creat',
+        accio:'usuario_creado',
 
         detall:{
           new:{
@@ -452,7 +452,7 @@ export async function POST(request){
 
     return NextResponse.json({
       ok:true,
-      warning:auditError ? "Usuari creat, però no s’ha pogut registrar l’acció a l’historial." : null,
+      warning:auditError ? "Usuario creado, pero no se ha podido registrar la acción en el historial." : null,
       id:userId
     })
 
@@ -501,7 +501,7 @@ export async function PATCH(request){
 
     if(canUpdate!==true){
       return NextResponse.json(
-        {error:'No tens permís per fer aquest canvi'},
+        {error:"No tienes permiso para hacer este cambio"},
         {status:403}
       )
     }
@@ -532,7 +532,7 @@ export async function PATCH(request){
       return NextResponse.json(
         {
           error:
-            'No pots desactivar el teu propi usuari'
+            "No puedes desactivar tu propio usuario"
         },
         {
           status:400
@@ -563,7 +563,7 @@ export async function PATCH(request){
 
       return NextResponse.json(
         {
-          error:'Usuari no trobat'
+          error:"Usuario no encontrado"
         },
         {
           status:404
@@ -580,7 +580,7 @@ export async function PATCH(request){
       return NextResponse.json(
         {
           error:
-            'Només un superadmin pot modificar un superadmin'
+            "Solo un superadministrador puede modificar a otro superadministrador"
         },
         {
           status:403
@@ -597,7 +597,7 @@ export async function PATCH(request){
       return NextResponse.json(
         {
           error:
-            'Només un superadmin pot assignar aquest rol'
+            "Solo un superadministrador puede asignar este rol"
         },
         {
           status:403
@@ -615,7 +615,7 @@ export async function PATCH(request){
       return NextResponse.json(
         {
           error:
-            'No pots modificar el teu propi rol'
+            "No puedes modificar tu propio rol"
         },
         {
           status:400
@@ -659,7 +659,7 @@ export async function PATCH(request){
       return NextResponse.json(
         {
           error:
-            'No hi ha canvis vàlids'
+            "No hay cambios válidos"
         },
         {
           status:400
@@ -696,7 +696,7 @@ export async function PATCH(request){
 
         registre_id:id,
 
-        accio:'usuari_actualitzat',
+        accio:'usuario_actualizado',
 
         detall:{
           old:before,
@@ -707,7 +707,7 @@ export async function PATCH(request){
 
     return NextResponse.json({
       ok:true,
-      warning:auditError ? "Usuari actualitzat, però no s’ha pogut registrar l’acció a l’historial." : null
+      warning:auditError ? "Usuario actualizado, pero no se ha podido registrar la acción en el historial." : null
     })
 
   }
@@ -744,7 +744,7 @@ export async function DELETE(request){
 
     if(id===auth.user.id){
       return NextResponse.json(
-        {error:'No pots eliminar el teu propi usuari'},
+        {error:"No puedes eliminar tu propio usuario"},
         {status:403}
       )
     }
@@ -754,7 +754,7 @@ export async function DELETE(request){
     const {data:before,error:profileError}=
       await admin
         .from('profiles')
-        .select('id,email,nom,rol,actiu')
+        .select("id,email,nom,rol,activo")
         .eq('id',id)
         .eq('workspace_id',auth.profile.workspace_id)
         .maybeSingle()
@@ -763,7 +763,7 @@ export async function DELETE(request){
 
     if(!before){
       return NextResponse.json(
-        {error:'Usuari no trobat'},
+        {error:"Usuario no encontrado"},
         {status:404}
       )
     }
@@ -773,7 +773,7 @@ export async function DELETE(request){
       auth.profile.rol!=='superadmin'
     ){
       return NextResponse.json(
-        {error:'Només un superadmin pot eliminar un superadmin'},
+        {error:"Solo un superadministrador puede eliminar a otro superadministrador"},
         {status:403}
       )
     }
@@ -795,7 +795,7 @@ export async function DELETE(request){
             user_id:auth.user.id,
             taula:'profiles',
             registre_id:id,
-            accio:'usuari_eliminat',
+            accio:'usuario_eliminado',
             detall:{old:before}
           })
 
@@ -804,7 +804,7 @@ export async function DELETE(request){
     }
     catch{
       warning=
-        'Usuari eliminat, però no s’ha pogut registrar l’acció a l’historial.'
+        "Usuario eliminado, pero no se ha podido registrar la acción en el historial."
     }
 
     return NextResponse.json({
@@ -816,7 +816,7 @@ export async function DELETE(request){
   catch(e){
 
     return NextResponse.json(
-      {error:e.message||'No s’ha pogut eliminar l’usuari'},
+      {error:e.message||"No se ha podido eliminar el usuario"},
       {status:500}
     )
 

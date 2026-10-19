@@ -17,7 +17,7 @@ export async function GET(request){
   const received=request.headers.get('authorization')
 
   if(!expected||received!==`Bearer ${expected}`){
-    return NextResponse.json({error:'No autoritzat'},{status:401})
+    return NextResponse.json({error:'No autorizado'},{status:401})
   }
 
   const admin=adminClient()

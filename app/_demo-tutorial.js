@@ -1,0 +1,435 @@
+'use client'
+
+import {useCallback,useEffect,useMemo,useState} from 'react'
+import {usePathname,useRouter} from 'next/navigation'
+
+const QUICK_STEPS=[
+  {
+    path:'/introduccion',
+    selector:'[data-tour="intro-overview"]',
+    title:'Bienvenido a VIP Experience Demo',
+    body:'Esta portada resume el propósito de la aplicación y el flujo que vas a explorar con datos totalmente ficticios.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.dashboardMatchPanel',
+    title:'Operativa del próximo partido',
+    body:'Aquí puedes cambiar de partido, revisar sus dos invitaciones, asignar comerciales y clientes y comprobar sus tareas.'
+  },
+  {
+    path:'/calendari',
+    selector:'[data-tour="nav-calendari"]',
+    title:'Calendario',
+    body:'Consulta todos los partidos, busca uno concreto y abre su ficha para editar datos y asignaciones.'
+  },
+  {
+    path:'/clients',
+    selector:'[data-tour="nav-clients"]',
+    title:'Clientes',
+    body:'La base de clientes reúne datos de contacto, historial de partidos y comercial responsable.'
+  },
+  {
+    path:'/tasques',
+    selector:'[data-tour="nav-tasques"]',
+    title:'Tareas',
+    body:'Filtra por varias prioridades, grupos y responsables y actualiza el estado de cada tarea.'
+  },
+  {
+    path:'/stock',
+    selector:'[data-tour="nav-stock"]',
+    title:'Stock',
+    body:'Controla existencias y registra entradas o salidas vinculadas a partidos, clientes y comerciales.'
+  },
+  {
+    path:'/historial',
+    selector:'[data-tour="nav-historial"]',
+    title:'Historial',
+    body:'Cada cambio relevante queda registrado para poder localizar qué ocurrió y quién lo hizo.'
+  },
+  {
+    path:'/dashboard',
+    selector:'[data-tour="tutorial-button"]',
+    title:'Tutorial siempre disponible',
+    body:'Puedes repetir el recorrido rápido o abrir el completo cuando quieras desde este botón.'
+  }
+]
+
+const FULL_STEPS=[
+  {
+    path:'/introduccion',
+    selector:'[data-tour="intro-overview"]',
+    title:'Bienvenido a tu entorno privado',
+    body:'Esta demo contiene una temporada ficticia completa. Los cambios que hagas aquí no afectan a otros visitantes.'
+  },
+  {
+    path:'/introduccion',
+    selector:'[data-tour="intro-flow"]',
+    title:'Un flujo de trabajo conectado',
+    body:'La operativa enlaza calendario, invitados, tareas, regalos, stock e historial para evitar información dispersa.'
+  },
+  {
+    path:'/introduccion',
+    selector:'.nav',
+    title:'Navegación principal',
+    body:'Desde este menú accedes a todas las áreas. Las opciones visibles dependen del rol y de sus permisos.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.dashboardMatchPanel',
+    title:'Partido seleccionado',
+    body:'El selector permite revisar cualquier partido. Los botones anterior, próximo y siguiente agilizan el cambio entre fechas.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.inviteColumns',
+    title:'Invitaciones y clientes',
+    body:'Cada plaza muestra su comercial, su cliente y el estado de los regalos. También puedes crear o reasignar datos desde aquí.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.matchTasksPreview',
+    title:'Tareas del partido',
+    body:'Las tareas se generan desde las plantillas y se agrupan para que puedas ver qué falta antes y después del partido.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.dashboardKpis',
+    title:'Indicadores urgentes',
+    body:'Estos contadores destacan tareas vencidas, tareas urgentes o de hoy y materiales con poco stock.'
+  },
+  {
+    path:'/calendari',
+    selector:'[data-tour="nav-calendari"]',
+    title:'Calendario de partidos',
+    body:'Abre Calendario para consultar la temporada completa y gestionar cada partido.'
+  },
+  {
+    path:'/calendari',
+    selector:'.partitsToolbar',
+    title:'Búsqueda y creación',
+    body:'Busca por rival, fecha o competición. Si tu rol lo permite, también puedes crear un partido nuevo.'
+  },
+  {
+    path:'/calendari',
+    selector:'.tablewrap',
+    title:'Estados del calendario',
+    body:'La tabla diferencia partidos próximos, jugados y cancelados. Abre una fila para editar el partido y sus dos plazas.'
+  },
+  {
+    path:'/clients',
+    selector:'[data-tour="nav-clients"]',
+    title:'Base de clientes',
+    body:'Aquí se centralizan los datos personales y el historial de asistencia de cada cliente.'
+  },
+  {
+    path:'/clients',
+    selector:'.toolbar',
+    title:'Búsqueda global de clientes',
+    body:'Puedes buscar por empresa, persona, comercial, rival o fecha. El filtro se conserva mientras navegas.'
+  },
+  {
+    path:'/clients',
+    selector:'.tablewrap',
+    title:'Ficha e historial',
+    body:'Cada fila muestra contacto, identificación, talla y partidos. Los partidos son accesos directos a su ficha.'
+  },
+  {
+    path:'/tasques',
+    selector:'[data-tour="nav-tasques"]',
+    title:'Centro de tareas',
+    body:'Tareas reúne todas las acciones operativas generadas para los partidos.'
+  },
+  {
+    path:'/tasques',
+    selector:'.filters',
+    title:'Filtros combinables',
+    body:'Combina varias prioridades, grupos y responsables, además de partido, estado y búsqueda de texto.'
+  },
+  {
+    path:'/tasques',
+    selector:'.taskcards',
+    title:'Cambio de estado',
+    body:'Actualiza cada tarea con su selector. Las tareas completadas y las fechas límite se recalculan de forma coherente.'
+  },
+  {
+    path:'/stock',
+    selector:'.stockCurrentPanel',
+    title:'Existencias actuales',
+    body:'Consulta la cantidad disponible de cada material y crea o elimina materiales si tu rol lo permite.'
+  },
+  {
+    path:'/stock',
+    selector:'.stockMovementsPanel',
+    title:'Movimientos de stock',
+    body:'Registra entradas y salidas. Una salida puede quedar vinculada a un partido, un cliente y un comercial para mantener la trazabilidad.'
+  },
+  {
+    path:'/historial',
+    selector:'.historyFilters',
+    title:'Auditoría y filtros',
+    body:'Filtra el historial por usuario, sección, acción y fechas para localizar un cambio concreto.'
+  },
+  {
+    path:'/historial',
+    selector:'.historyItem',
+    title:'Detalle de cada cambio',
+    body:'Abre un registro para comparar valores anteriores y nuevos y, cuando corresponde, volver al elemento relacionado.'
+  },
+  {
+    path:'/configuracio',
+    selector:'[data-tour="nav-configuracio"]',
+    title:'Configuración operativa',
+    body:'Configuración contiene los comerciales, las plantillas que generan tareas y las copias de seguridad.'
+  },
+  {
+    path:'/configuracio',
+    selector:'.configSectionPanel',
+    title:'Comerciales',
+    body:'Gestiona comerciales de primera y segunda asistencia y comprueba cuáles están disponibles para nuevas asignaciones.'
+  },
+  {
+    path:'/configuracio',
+    selector:'.configSectionPanel:nth-of-type(2)',
+    title:'Plantillas de tareas',
+    body:'Las plantillas definen nombre, grupo, fecha relativa, estados válidos, estado correcto y responsable de las tareas automáticas.'
+  },
+  {
+    path:'/configuracio/usuaris',
+    selector:'.panel',
+    title:'Usuarios y roles',
+    body:'Los administradores autorizados pueden invitar usuarios, asignar roles y activar o desactivar accesos.'
+  },
+  {
+    path:'/configuracio/usuaris/permisos',
+    selector:'.permissionsMatrixWrap',
+    title:'Permisos por rol',
+    body:'La matriz explica qué puede hacer cada rol. El superadministrador puede ajustar permisos y los cambios se aplican al rol completo.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.roleViewSwitcher',
+    optional:true,
+    title:'Comprobar la experiencia de otro rol',
+    body:'Si tu cuenta lo permite, cambia temporalmente la vista para navegar con los accesos de un rol inferior.'
+  },
+  {
+    path:'/dashboard',
+    selector:'.resetDemoButton',
+    optional:true,
+    title:'Restablecer la demo',
+    body:'El superadministrador puede recuperar todos los datos ficticios iniciales. Esta acción elimina los cambios de su propio entorno demo.'
+  },
+  {
+    path:'/dashboard',
+    selector:'[data-tour="tutorial-button"]',
+    title:'Ya conoces la aplicación',
+    body:'Puedes abrir de nuevo cualquiera de los dos recorridos desde este botón. Explora y modifica los datos con libertad.'
+  }
+]
+
+function clamp(value,min,max){
+  return Math.min(Math.max(value,min),max)
+}
+
+export default function DemoTutorial({userKey='current'}){
+  const router=useRouter()
+  const pathname=usePathname()
+  const storageKey=`vipExperienceDemoTutorial:v1:${userKey}`
+  const [chooserOpen,setChooserOpen]=useState(false)
+  const [mode,setMode]=useState(null)
+  const [stepIndex,setStepIndex]=useState(0)
+  const [targetRect,setTargetRect]=useState(null)
+
+  const steps=useMemo(
+    ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
+    [mode]
+  )
+  const step=mode ? steps[stepIndex] : null
+
+  useEffect(()=>{
+    function handleTutorialStart(event){
+      const nextMode=event.detail?.mode
+      if(!['quick','full'].includes(nextMode))return
+      setChooserOpen(false)
+      setMode(nextMode)
+      setStepIndex(0)
+      setTargetRect(null)
+      window.localStorage.setItem(storageKey,'started')
+    }
+
+    window.addEventListener('vip-demo-tutorial-start',handleTutorialStart)
+    return ()=>window.removeEventListener(
+      'vip-demo-tutorial-start',
+      handleTutorialStart
+    )
+  },[storageKey])
+
+  const locateTarget=useCallback(()=>{
+    if(!step?.selector){
+      setTargetRect(null)
+      return
+    }
+    const node=document.querySelector(step.selector)
+    if(!node){
+      setTargetRect(null)
+      return
+    }
+    node.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'})
+    window.setTimeout(()=>{
+      const rect=node.getBoundingClientRect()
+      setTargetRect({
+        top:clamp(rect.top-7,8,window.innerHeight-24),
+        left:clamp(rect.left-7,8,window.innerWidth-24),
+        width:Math.min(rect.width+14,window.innerWidth-16),
+        height:Math.min(rect.height+14,window.innerHeight-16)
+      })
+    },180)
+  },[step])
+
+  useEffect(()=>{
+    if(!step)return
+    if(step.path && pathname!==step.path){
+      router.push(step.path)
+      return
+    }
+    const timer=window.setTimeout(locateTarget,220)
+    window.addEventListener('resize',locateTarget)
+    window.addEventListener('scroll',locateTarget,true)
+    return ()=>{
+      window.clearTimeout(timer)
+      window.removeEventListener('resize',locateTarget)
+      window.removeEventListener('scroll',locateTarget,true)
+    }
+  },[locateTarget,pathname,router,step])
+
+  function start(nextMode){
+    setChooserOpen(false)
+    setMode(nextMode)
+    setStepIndex(0)
+    window.localStorage.setItem(storageKey,'started')
+  }
+
+  function close(result='skipped'){
+    setMode(null)
+    setStepIndex(0)
+    setTargetRect(null)
+    window.localStorage.setItem(storageKey,result)
+  }
+
+  function move(direction){
+    const next=stepIndex+direction
+    if(next>=steps.length){
+      close('completed')
+      return
+    }
+    setTargetRect(null)
+    setStepIndex(Math.max(0,next))
+  }
+
+  const cardStyle=targetRect && typeof window!=='undefined' && window.innerWidth>760
+    ? {
+        top:clamp(
+          targetRect.top+targetRect.height+14,
+          16,
+          window.innerHeight-310
+        ),
+        left:clamp(
+          targetRect.left,
+          16,
+          window.innerWidth-396
+        )
+      }
+    : undefined
+
+  return <>
+    <button
+      type="button"
+      className="tutorialLaunchButton"
+      data-tour="tutorial-button"
+      onClick={()=>setChooserOpen(true)}
+    >
+      <span aria-hidden="true">?</span>
+      Tutorial
+    </button>
+
+    {chooserOpen&&(
+      <div className="tutorialBackdrop" role="presentation">
+        <section
+          className="tutorialChooser"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tutorialChooserTitle"
+        >
+          <button
+            type="button"
+            className="tutorialClose"
+            aria-label="Cerrar tutorial"
+            onClick={()=>{
+              setChooserOpen(false)
+              window.localStorage.setItem(storageKey,'later')
+            }}
+          >
+            ×
+          </button>
+          <div className="tutorialEyebrow">GUÍA INTERACTIVA</div>
+          <h2 id="tutorialChooserTitle">¿Cómo quieres conocer la aplicación?</h2>
+          <p>Elige un recorrido. Podrás repetirlo o cambiar de modalidad cuando quieras.</p>
+          <div className="tutorialChoices">
+            <button type="button" onClick={()=>start('quick')}>
+              <strong>Tutorial rápido</strong>
+              <span>2–3 minutos · Lo fundamental para empezar</span>
+            </button>
+            <button type="button" onClick={()=>start('full')}>
+              <strong>Tutorial completo</strong>
+              <span>8–10 minutos · Todas las áreas y funciones</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    )}
+
+    {step&&(
+      <div className="tutorialLayer">
+        {targetRect&&(
+          <div className="tutorialSpotlight" style={targetRect}/>
+        )}
+        {!targetRect&&<div className="tutorialDimmer"/>}
+        <section
+          className={`tutorialCoachmark${targetRect ? '' : ' centered'}`}
+          style={cardStyle}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tutorialStepTitle"
+        >
+          <div className="tutorialProgressRow">
+            <span>{mode==='full' ? 'TUTORIAL COMPLETO' : 'TUTORIAL RÁPIDO'}</span>
+            <span>{stepIndex+1} / {steps.length}</span>
+          </div>
+          <div className="tutorialProgress" aria-hidden="true">
+            <span style={{width:`${((stepIndex+1)/steps.length)*100}%`}}/>
+          </div>
+          <h2 id="tutorialStepTitle">{step.title}</h2>
+          <p>{step.body}</p>
+          <div className="tutorialControls">
+            <button type="button" className="tutorialSkip" onClick={()=>close()}>
+              Omitir
+            </button>
+            <div>
+              <button
+                type="button"
+                className="btn"
+                disabled={stepIndex===0}
+                onClick={()=>move(-1)}
+              >
+                Anterior
+              </button>
+              <button type="button" className="btn primary" onClick={()=>move(1)}>
+                {stepIndex===steps.length-1 ? 'Finalizar' : 'Siguiente'}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )}
+  </>
+}

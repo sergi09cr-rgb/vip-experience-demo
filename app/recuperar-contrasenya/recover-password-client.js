@@ -51,12 +51,12 @@ export default function RecoverPasswordClient({
 
         if(sendError.status===429){
           throw new Error(
-            'Has fet massa intents. Espera uns minuts abans de tornar-ho a provar.'
+            "Has realizado demasiados intentos. Espera unos minutos antes de volver a intentarlo."
           )
         }
 
         throw new Error(
-          'No s’ha pogut tramitar la sol·licitud. Torna-ho a provar més tard.'
+          "No se ha podido tramitar la solicitud. Vuelve a intentarlo más tarde."
         )
       }
 
@@ -66,7 +66,7 @@ export default function RecoverPasswordClient({
     catch(e){
 
       setError(
-        e.message||'No s’ha pogut connectar. Torna-ho a provar.'
+        e.message||"No se ha podido connectar. Vuelve a intentarlo."
       )
 
     }
@@ -99,7 +99,7 @@ export default function RecoverPasswordClient({
           VIP Experience Demo
         </p>
 
-        <h1>Recupera la contrasenya</h1>
+        <h1>Recupera la contraseña</h1>
 
         {error && (
           <div className="loginAlert" role="alert">
@@ -110,13 +110,13 @@ export default function RecoverPasswordClient({
         {sent ? (
           <div role="status">
             <p>
-              Si hi ha un compte associat a aquest correu,
-              rebràs un enllaç per establir una nova
-              contrasenya.
+              Si hay una cuenta asociada a este correo,
+              recibirás un enlace para establecer una nueva
+              contraseña.
             </p>
 
             <p className="muted">
-              Revisa també la carpeta de correu brossa.
+              Revisa también la carpeta de correo no deseado.
             </p>
           </div>
         ) : (
@@ -125,13 +125,13 @@ export default function RecoverPasswordClient({
             onSubmit={sendRecovery}
           >
             <p className="muted full">
-              Introdueix el correu del teu compte.
-              T’enviarem les instruccions per recuperar
-              l’accés.
+              Introduce el correo de tu cuenta.
+              Te enviaremos las instrucciones para recuperar
+              el acceso.
             </p>
 
             <label className="field full">
-              <span>Correu electrònic</span>
+              <span>Correo electrónico</span>
 
               <input
                 type="email"
@@ -150,8 +150,8 @@ export default function RecoverPasswordClient({
                 disabled={sending}
               >
                 {sending
-                  ? 'Enviant...'
-                  : 'Enviar enllaç'
+                  ? 'Enviando...'
+                  : "Enviar enlace"
                 }
               </button>
             </div>
@@ -167,8 +167,8 @@ export default function RecoverPasswordClient({
             }
           >
             {hasSession
-              ? 'Tornar al panell'
-              : 'Tornar a l’inici de sessió'
+              ? "Volver al panell"
+              : "Volver al inicio de sesión"
             }
           </a>
         </p>

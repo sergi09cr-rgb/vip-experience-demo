@@ -5,13 +5,15 @@ import {useEffect,useMemo,useState} from 'react'
 import {usePathname} from 'next/navigation'
 import {ROLE_KEYS,ROLE_LABELS} from '../lib/permissions'
 import LogoutButton from './_logout'
+import DemoTutorial from './_demo-tutorial'
 import {createClient} from '../lib/supabase-browser'
 
 const baseLinks=[
+  ['/introduccion','⌂','Introducción',null],
   ['/dashboard','▣','Dashboard','view_dashboard'],
-  ['/calendari','◆','Calendari','view_matches'],
-  ['/clients','♧','Clients','view_clients'],
-  ['/tasques','✓','Tasques','view_tasks'],
+  ['/calendari','◆',"Calendario",'view_matches'],
+  ['/clients','♧',"Clientes",'view_clients'],
+  ['/tasques','✓',"Tareas",'view_tasks'],
   ['/stock','▣','Stock','view_stock'],
   ['/historial','◷','Historial','view_history']
 ]
@@ -36,11 +38,11 @@ export default function Shell({
   const [resetting,setResetting]=useState(false)
 
   async function resetDemo(){
-    if(!window.confirm('Vols restablir totes les dades fictícies de la teva demo?'))return
+    if(!window.confirm("¿Quieres restablecer todos los datos ficticios de tu demo?"))return
     setResetting(true)
     const {error}=await supabase.rpc('reset_demo_workspace')
     if(error){
-      window.alert('No s’ha pogut restablir la demo.')
+      window.alert("No se ha podido restablecer la demo.")
       setResetting(false)
       return
     }
@@ -93,14 +95,14 @@ export default function Shell({
   },[supabase,userEmail])
 
   const links=baseLinks.filter(
-    link=>permissions?.[link[3]]!==false
+    link=>!link[3]||permissions?.[link[3]]!==false
   )
 
   if(permissions?.view_configuration!==false){
     links.push([
       '/configuracio',
       '⚙',
-      'Configuració',
+      "Configuración",
       'view_configuration'
     ])
   }
@@ -117,9 +119,9 @@ export default function Shell({
         </div>
 
         <div className="brandSub">
-          ENTORN DE DEMOSTRACIÓ
+          ENTORNO DE DEMOSTRACIÓN
           <br/>
-          4 butaques VIP · Centre Mediterrània
+          4 butacas VIP · Centro Mediterráneo
         </div>
 
         <nav className="nav">
@@ -136,6 +138,7 @@ export default function Shell({
               <Link
                 href={href}
                 prefetch
+                data-tour={`nav-${href.slice(1)}`}
                 className={
                   active===sectionKey
                     ? 'active'
@@ -157,7 +160,7 @@ export default function Shell({
                         : ''
                     }`}
                   >
-                    Gestionar usuaris
+                    Gestionar usuarios
                   </Link>
 
                   <Link
@@ -170,7 +173,7 @@ export default function Shell({
                         : ''
                     }`}
                   >
-                    Veure tasques per rol
+                    Ver tareas por rol
                   </Link>
                 </div>
               )}
@@ -181,6 +184,8 @@ export default function Shell({
 
         <div className="sideBottom">
 
+          <DemoTutorial userKey={userEmail||'current'}/>
+
           {role==='superadmin' && (
             <button
               type="button"
@@ -188,7 +193,7 @@ export default function Shell({
               disabled={resetting}
               onClick={resetDemo}
             >
-              {resetting ? 'Restablint...' : 'Restablir demo'}
+              {resetting ? 'Restableciendo...' : 'Restablecer demo'}
             </button>
           )}
 
@@ -199,18 +204,18 @@ export default function Shell({
               }
               title={
                 isSimulated
-                  ? `Estàs navegant amb permisos de ${ROLE_LABELS[effectiveRole]}`
-                  : 'Canvia temporalment la visió de permisos'
+                  ? `Estás navegando con permisos de ${ROLE_LABELS[effectiveRole]}`
+                  : "Cambia temporalmente la vista de permisos"
               }
             >
               <label htmlFor="roleViewSelect">
-                {isSimulated ? 'Visió simulada' : 'Visió'}
+                {isSimulated ? "Vista simulada" : "Vista"}
               </label>
               <select
                 id="roleViewSelect"
                 value={effectiveRole}
                 onChange={changeViewRole}
-                aria-label="Navegar amb els permisos d’un altre rol"
+                aria-label="Navegar con los permisos de otro rol"
               >
                 {viewRoles.map(viewRole=>(
                   <option key={viewRole} value={viewRole}>

@@ -7,5 +7,5 @@ export default function LogoutButton() {
     await supabase.auth.signOut()
     window.location.href = '/login'
   }
-  return <button className="logout" onClick={logout}>Tancar sessió</button>
+  return <button className="logout" onClick={logout}>Cerrar sesión</button>
 }

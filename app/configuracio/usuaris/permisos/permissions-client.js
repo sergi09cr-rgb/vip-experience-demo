@@ -10,14 +10,14 @@ import {
 } from '../../../../lib/permissions'
 
 function PermissionButton({allowed,editable,busy,label,role,onClick}){
-  const text=allowed ? 'Permès' : 'No permès'
+  const text=allowed ? "Permitido" : "No permitido"
   return (
     <button
       type="button"
       className={`permissionToggle ${allowed ? 'allowed' : 'denied'} ${editable ? 'editable' : ''}`}
-      aria-label={`${role}: ${text} per ${label}`}
+      aria-label={`${role}: ${text} para ${label}`}
       aria-pressed={allowed}
-      title={editable ? `${text}. Clica per canviar-lo` : text}
+      title={editable ? `${text}. Haz clic para cambiarlo` : text}
       disabled={!editable || busy}
       onClick={onClick}
     >
@@ -73,7 +73,7 @@ export default function PermissionsClient({initialRows,currentRole}){
       setRows(previous)
       setMessage(error.message)
     }else{
-      setMessage('Permís actualitzat. El canvi ja s’aplica a tots els usuaris d’aquest rol.')
+      setMessage("Permiso actualizado. El cambio ya se aplica a todos los usuarios de este rol.")
     }
     setPending('')
   }
@@ -89,7 +89,7 @@ export default function PermissionsClient({initialRows,currentRole}){
       <table className="permissionsMatrix">
         <thead>
           <tr>
-            <th>Tasca o acció</th>
+            <th>Tarea o acción</th>
             {ROLE_KEYS.map(role=><th key={role} style={{textAlign:'center',width:130}}>{ROLE_LABELS[role]}</th>)}
           </tr>
         </thead>

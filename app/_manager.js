@@ -18,10 +18,10 @@ const TODAY=()=>new Date().toISOString().slice(0,10)
 const TASK_PAGE_SIZE=50
 const CREATE_CLIENT_VALUE='__create_client__'
 const TASK_PRIORITY_FILTERS=[
-  'Vençuda',
-  'Avui',
-  'Urgent',
-  'Pròxima',
+  "Vencida",
+  "Hoy",
+  "Urgente",
+  "Próxima",
   'Planificada',
   'Completada'
 ]
@@ -210,7 +210,7 @@ function withoutPendingDeletedClients(snapshot){
 }
 
 const DATE_FMT=new Intl.DateTimeFormat(
-  'ca-ES',
+  'es-ES',
   {
     day:'2-digit',
     month:'2-digit',
@@ -219,7 +219,7 @@ const DATE_FMT=new Intl.DateTimeFormat(
 )
 
 const WEEKDAY_FMT=new Intl.DateTimeFormat(
-  'ca-ES',
+  'es-ES',
   {
     weekday:'long'
   }
@@ -240,16 +240,16 @@ const fieldMap={
 }
 
 const groupOrder=[
-  'Dades',
-  'Regals',
-  'Pre partit',
-  'Post partit'
+  "Datos",
+  "Regalos",
+  "Pre partido",
+  "Post partido"
 ]
 
 const taskResponsibles=[
-  'Marta',
-  'Cristina',
-  'Sergi'
+  'Lucía Martín',
+  'Diego Ruiz',
+  'Elena Soto'
 ]
 
 
@@ -272,12 +272,12 @@ function ResponsibleTag({
       className={
         `responsibleTag responsible-${
           value
-            ? value.toLowerCase()
+            ? normalizeSearch(value).replace(/\s+/g,'-')
             : 'none'
         }`
       }
     >
-      {value||'Sense assignar'}
+      {value||"Sin asignar"}
     </span>
   )
 }
@@ -305,7 +305,7 @@ function fmtWeekday(s){
     WEEKDAY_FMT.format(d)
 
   return weekday.charAt(0)
-    .toLocaleUpperCase('ca')
+    .toLocaleUpperCase('es')
     +weekday.slice(1)
 }
 
@@ -383,14 +383,14 @@ function normalizeSearch(value=''){
 
 function taskPriority(t){
   if(t.completada)return 'Completada'
-  if(!t.data_limit)return 'Sense termini'
+  if(!t.data_limit)return "Sin plazo"
 
   const d=daysBetween(t.data_limit)
 
-  if(d<0)return 'Vençuda'
-  if(d===0)return 'Avui'
-  if(d<=2)return 'Urgent'
-  if(d<=7)return 'Pròxima'
+  if(d<0)return "Vencida"
+  if(d===0)return "Hoy"
+  if(d<=2)return "Urgente"
+  if(d<=7)return "Próxima"
 
   return 'Planificada'
 }
@@ -398,12 +398,12 @@ function taskPriority(t){
 
 function priorityRank(p){
   return ({
-    'Vençuda':0,
-    'Avui':1,
-    'Urgent':2,
-    'Pròxima':3,
+    "Vencida":0,
+    "Hoy":1,
+    "Urgente":2,
+    "Próxima":3,
     'Planificada':4,
-    'Sense termini':5,
+    "Sin plazo":5,
     'Completada':6
   })[p]??7
 }
@@ -483,9 +483,9 @@ function statusOptions(t,temp){
   if(taskName==='formulari'){
 
     return [
-      'No enviat',
-      'Enviat',
-      'Respost'
+      'No enviado',
+      'Enviado',
+      'Respondido'
     ]
 
   }
@@ -495,27 +495,27 @@ function statusOptions(t,temp){
 
   const map={
 
-    'Preparat':[
-      'No preparat',
-      'Preparant-se',
-      'Preparat'
+    "Preparado":[
+      "No preparado",
+      "Preparándose",
+      "Preparado"
     ],
 
-    'Enviat':[
-      'No preparat',
-      'Preparat',
-      'Enviat'
+    'Enviado':[
+      "No preparado",
+      "Preparado",
+      'Enviado'
     ],
 
-    'Rebut':[
-      'No rebut',
-      'Rebut'
+    'Recibido':[
+      'No recibido',
+      'Recibido'
     ],
 
-    'Entregat comercial':[
-      'No entregat',
-      'Preparant-se',
-      'Entregat comercial'
+    "Entregado comercial":[
+      "No entregado",
+      "Preparándose",
+      "Entregado comercial"
     ]
 
   }
@@ -548,7 +548,7 @@ function statusOptions(t,temp){
 function statusKey(value=''){
   return String(value)
     .trim()
-    .toLocaleLowerCase('ca')
+    .toLocaleLowerCase('es')
 }
 
 
@@ -611,7 +611,7 @@ function taskCompletionFromStatus(
     return false
   }
 
-  if(task?.estat_correcte==='Omplert'){
+  if(task?.estat_correcte==='Completado'){
     return (
       !!status &&
       ![
@@ -666,7 +666,7 @@ function derivedStatus(
       )
 
     return {
-      status:v||'No demanat',
+      status:v||'No solicitado',
       done:SIZE_OK.includes(v)
     }
   }
@@ -680,8 +680,8 @@ function derivedStatus(
       return {
         status:
           inv?.client_id
-            ? 'Omplert'
-            : 'No omplert',
+            ? 'Completado'
+            : 'No completado',
 
         done:
           !!inv?.client_id
@@ -703,8 +703,8 @@ function derivedStatus(
     return {
       status:
         has
-          ? 'Omplert'
-          : 'No omplert',
+          ? 'Completado'
+          : 'No completado',
 
       done:has
     }
@@ -719,8 +719,8 @@ function derivedStatus(
       return {
         status:
           inv?.comercial_id
-            ? 'Omplert'
-            : 'No omplert',
+            ? 'Completado'
+            : 'No completado',
 
         done:
           !!inv?.comercial_id
@@ -743,8 +743,8 @@ function derivedStatus(
     return {
       status:
         v
-          ? 'Omplert'
-          : 'No omplert',
+          ? 'Completado'
+          : 'No completado',
 
       done:!!v
     }
@@ -1042,11 +1042,11 @@ const can=
       commercialAssignmentStates.get(id)
 
     if(state==='without_client'){
-      return ' · Partit sense client'
+      return " · Partido sin cliente"
     }
 
     if(state==='with_client'){
-      return ' · Partit amb client'
+      return " · Partido con cliente"
     }
 
     return ''
@@ -1115,14 +1115,14 @@ const can=
       ()=>
         orderedMatches.find(
           p=>
-            p.estat_partit==='Planificat'
+            p.estat_partit==="Planificado"
             &&
             p.data>=TODAY()
         )
         ||
         orderedMatches.find(
           p=>
-            p.estat_partit==='Planificat'
+            p.estat_partit==="Planificado"
         )
         ||
         orderedMatches[0],
@@ -1217,14 +1217,14 @@ const can=
             comercials:()=>supabase
                 .from('comercials')
                 .select(
-                  'id,nom,dni,telefon,correu,data_naixement,talla,nom_samarreta,actiu,created_at'
+                  "id,nom,dni,telefon,correu,data_naixement,talla,nom_samarreta,activo,created_at"
                 )
                 .eq('actiu',true)
                 .order('nom'),
             clients:()=>supabase
                 .from('clients')
                 .select(
-                  'id,empresa,nom_client,comercial_id,telefon,correu,dni,nacionalitat,data_naixement,talla,nom_samarreta,notes,actiu,created_at'
+                  "id,empresa,nom_client,comercial_id,telefon,correu,dni,nacionalitat,data_naixement,talla,nom_samarreta,notes,activo,created_at"
                 )
                 .eq('actiu',true)
                 .order('empresa'),
@@ -1251,7 +1251,7 @@ const can=
             materials:()=>supabase
                 .from('materials')
                 .select(
-                  'id,nom,quantitat,actiu,created_at'
+                  "id,nom,cantidad,activo,created_at"
                 )
                 .eq('actiu',true)
                 .order('nom'),
@@ -1273,7 +1273,7 @@ const can=
                 .limit(300)
           }
           const requested=sections===null ? Object.keys(queries) : [...new Set(sections)]
-          if(requested.some(key=>!queries[key]))throw new Error('Secció de dades desconeguda')
+          if(requested.some(key=>!queries[key]))throw new Error("Secció de datos desconeguda")
           const qs=await Promise.all(requested.map(key=>queries[key]()))
 
           for(const q of qs){
@@ -1502,7 +1502,7 @@ async function downloadBackup(){
     if(!response.ok){
 
       let message=
-        'No s’ha pogut generar la còpia.'
+        "No se ha podido generar la copia."
 
       try{
 
@@ -1568,7 +1568,7 @@ async function downloadBackup(){
 
 
     notify(
-      'Còpia de seguretat descarregada'
+      "Copia de seguridad descargada"
     )
 
   }
@@ -1576,7 +1576,7 @@ async function downloadBackup(){
 
     notify(
       error?.message ||
-      'Error descarregant la còpia'
+      "Error descargando la copia"
     )
 
   }
@@ -1665,7 +1665,7 @@ async function downloadBackup(){
               result.count>(result.data||[]).length
             ){
               throw new Error(
-                'La consulta és incompleta; cal carregar les dades per pàgines.'
+                "La consulta está incompleta; hay que cargar los datos por páginas."
               )
             }
           }
@@ -1703,7 +1703,7 @@ async function downloadBackup(){
 
         if(!disposed){
           notify(
-            `Error actualitzant les tasques: ${e.message}`
+            `Error al actualizar las tareas: ${e.message}`
           )
         }
 
@@ -2047,7 +2047,7 @@ async function downloadBackup(){
         requestAnimationFrame(
           ()=>{
             const target=
-              modal.focusTaskGroup==='Regals'
+              modal.focusTaskGroup==="Regalos"
                 ? matchGiftTasksRef.current
                 : null
 
@@ -2392,7 +2392,7 @@ useEffect(()=>{
     status
   ){
 if(!can('tasks_update') && !can('tasks_complete')){
-  notify('No tens permís per modificar tasques')
+  notify("No tienes permiso para modificar tareas")
   return
 }
     const t=
@@ -2408,34 +2408,34 @@ if(!can('tasks_update') && !can('tasks_complete')){
       taskStatusNeedsClient(t,temp,status)
     ){
       notify(
-        'Primer cal assignar o crear el client.'
+        "Primero hay que asignar o crear el cliente."
       )
       return
     }
 
 
     const done=
-      t.estat_correcte==='Omplert'
+      t.estat_correcte==='Completado'
         ? (
             !!status &&
-            status!=='No omplert' &&
-            status!=='No demanat'
+            status!=='No completado' &&
+            status!=='No solicitado'
           )
         : status===t.estat_correcte
 
     if(done && !can('tasks_complete')){
-      notify('No tens permís per completar tasques')
+      notify("No tienes permiso para completar tareas")
       return
     }
 
     if(!done && !can('tasks_update')){
-      notify('No tens permís per canviar aquest estat')
+      notify("No tienes permiso para cambiar este estado")
       return
     }
 
     if(done && !inv?.client_id){
       notify(
-        'Primer cal assignar o crear el client.'
+        "Primero hay que asignar o crear el cliente."
       )
       return
     }
@@ -2497,8 +2497,8 @@ if(!can('tasks_update') && !can('tasks_complete')){
 
     notify(
       done
-        ? 'Tasca completada'
-        : 'Estat actualitzat'
+        ? "Tarea completada"
+        : "Estado actualizado"
     )
 
   }
@@ -2507,14 +2507,14 @@ if(!can('tasks_update') && !can('tasks_complete')){
   async function confirmTaskDone(t){
 if(!can('tasks_force_complete')){
   notify(
-    'No tens permís per confirmar tasques manualment'
+    "No tienes permiso para confirmar tareas manualment"
   )
   return
 }
 
     const ok=
       confirm(
-        `Confirmar "${t.nom}" com a completada?\n\nLa tasca deixarà d'aparèixer com a pendent encara que el procés real no s'hagi completat.`
+        `¿Confirmar "${t.nom}" como completada?\n\nLa tarea dejará de aparecer como pendiente aunque el proceso real no se haya completado.`
       )
 
 
@@ -2563,7 +2563,7 @@ if(!can('tasks_force_complete')){
     router.refresh()
 
     notify(
-      'Tasca confirmada com a completada'
+      "Tarea confirmada como completada"
     )
 
   }
@@ -2676,7 +2676,7 @@ if(!can('tasks_force_complete')){
 
         throw new Error(
           reason?.message ||
-          'No s’han pogut actualitzar algunes tasques.'
+          "No se han podido actualizar algunas tareas."
         )
 
       }
@@ -2833,7 +2833,7 @@ function openCommercial(
   function openDeleteMaterial(){
     if(!can('materials_delete')){
       notify(
-        'No tens permís per eliminar materials'
+        "No tienes permiso para eliminar materiales"
       )
       return
     }
@@ -2849,7 +2849,7 @@ function openCommercial(
     setMovementType(
       can('stock_entry')
         ? 'Entrada'
-        : 'Sortida'
+        : 'Salida'
     )
     setMovementSelectedMaterialIds([])
     setMovementEntryQuantities({})
@@ -2927,7 +2927,7 @@ function openCommercial(
 
     const ok=
       confirm(
-        `Segur que vols eliminar "${template.nom}" de la plantilla?\n\nLes tasques pendents creades per aquesta plantilla s'eliminaran. Les completades es conservaran.`
+        `¿Seguro que quieres eliminar "${template.nom}" de la plantilla?\n\nLas tareas pendientes creadas por esta plantilla se eliminarán. Las completadas se conservarán.`
       )
 
 
@@ -3004,7 +3004,7 @@ function openCommercial(
 
 
       notify(
-        'Tasca eliminada de la plantilla'
+        "Tarea eliminada de la plantilla"
       )
 
     }
@@ -3110,11 +3110,11 @@ function openCommercial(
 
         <PageHead
           title="Dashboard"
-          subtitle="Control del partit i de les accions que requereixen atenció."
+          subtitle="Control del partido y de las acciones que requieren atención."
         />
 
         <div className="panel empty">
-          Encara no hi ha partits.
+          Todavía no hay partidos.
         </div>
 
       </>
@@ -3169,7 +3169,7 @@ function openCommercial(
             (a.nom||'')
               .localeCompare(
                 b.nom||'',
-                'ca',
+                'es',
                 {
                   sensitivity:'base'
                 }
@@ -3196,9 +3196,9 @@ function openCommercial(
             !t.completada
             &&
             [
-              'Vençuda',
-              'Avui',
-              'Urgent'
+              "Vencida",
+              "Hoy",
+              "Urgente"
             ]
             .includes(
               taskPriority(t)
@@ -3241,7 +3241,7 @@ function openCommercial(
           (a,b)=>
             a.localeCompare(
               b,
-              'ca',
+              'es',
               {
                 sensitivity:'base'
               }
@@ -3300,7 +3300,7 @@ function openCommercial(
         t=>
           !t.completada
           &&
-          taskPriority(t)==='Vençuda'
+          taskPriority(t)==="Vencida"
       ).length
 
 
@@ -3310,8 +3310,8 @@ function openCommercial(
           !t.completada
           &&
           [
-            'Avui',
-            'Urgent'
+            "Hoy",
+            "Urgente"
           ]
           .includes(
             taskPriority(t)
@@ -3329,14 +3329,14 @@ function openCommercial(
 
       <PageHead
         title="Dashboard"
-        subtitle="Control del partit i de les accions que requereixen atenció."
+        subtitle="Control del partido y de las acciones que requieren atención."
       />
 
 
       <section className="panel dashboardMatchPanel">
 
         <div className="sectionlabel">
-          Informació del partit
+          Información del partido
         </div>
 
 
@@ -3345,7 +3345,7 @@ function openCommercial(
           <div>
 
             <div className="bigmatch">
-              Club Mediterrània · {p.rival}
+              Club Mediterráneo · {p.rival}
             </div>
 
             <div className="muted">
@@ -3392,11 +3392,11 @@ function openCommercial(
                   key={m.id}
                   value={m.id}
                   style={
-                    m.estat_partit==='Jugat'
+                    m.estat_partit==="Jugado"
                       ? {
                           background:'#e7f6ed'
                         }
-                      : m.estat_partit==='Cancel·lat'
+                      : m.estat_partit==='Cancelado'
                       ? {
                           background:'#29313a',
                           color:'white'
@@ -3406,16 +3406,16 @@ function openCommercial(
                 >
 
                   {m.id===nextMatch?.id
-                    ? '★ PRÒXIM · '
+                    ? "★ PRÓXIMO · "
                     : ''
                   }
 
                   {fmtDate(m.data)}
-                  {' · Club Mediterrània - '}
+                  {" · Club Mediterráneo - "}
                   {m.rival}
 
-                  {m.estat_partit==='Jugat'
-                    ? ' · Jugat'
+                  {m.estat_partit==="Jugado"
+                    ? " · Jugado"
                     : ''
                   }
 
@@ -3456,7 +3456,7 @@ function openCommercial(
                 )
             }
           >
-            ★ Pròxim
+            ★ Próximo
           </button>
 
 
@@ -3475,7 +3475,7 @@ function openCommercial(
                 )
             }
           >
-            Següent →
+            Siguiente →
           </button>
 
         </div>
@@ -3509,7 +3509,7 @@ function openCommercial(
 <div className="matchTasksPreview">
 
   <h2>
-    Tasques pendents del partit
+    Tareas pendientes del partido
   </h2>
 
   <div className="taskcards compact dashboardTasks">
@@ -3520,7 +3520,7 @@ function openCommercial(
 
     {!matchTasks.length&&
       <div className="empty">
-        Tot al dia ✓
+        Todo al día ✓
       </div>
     }
 
@@ -3533,7 +3533,7 @@ function openCommercial(
         ()=>goTasks(p.id)
       }
     >
-      Veure totes ({matchTasks.length})
+      Ver todas ({matchTasks.length})
     </button>
   }
 
@@ -3545,7 +3545,7 @@ function openCommercial(
 
 
 <div className="sectionlabel dashboardActionsLabel">
-  Accions prioritàries
+  Acciones prioritarias
 </div>
 
 
@@ -3556,7 +3556,7 @@ function openCommercial(
       {overdue}
     </div>
     <div className="l">
-      Tasques vençudes
+      Tareas vencidas
     </div>
   </div>
 
@@ -3565,7 +3565,7 @@ function openCommercial(
       {urgent}
     </div>
     <div className="l">
-      Tasques urgents / avui
+      Tareas urgentes / hoy
     </div>
   </div>
 
@@ -3574,7 +3574,7 @@ function openCommercial(
       {lowStock.length}
     </div>
     <div className="l">
-      Alertes d'estoc
+      Alertas de stock
     </div>
   </div>
 
@@ -3586,7 +3586,7 @@ function openCommercial(
   <section className="panel">
 
     <h2>
-      Accions prioritàries
+      Acciones prioritarias
     </h2>
 
     <div className="taskcards dashboardPriorityTasks">
@@ -3597,7 +3597,7 @@ function openCommercial(
 
       {!priorityTasks.length&&
         <div className="empty">
-          No hi ha accions urgents ✓
+          No hay acciones urgentes ✓
         </div>
       }
 
@@ -3609,7 +3609,7 @@ function openCommercial(
   <section className="panel">
 
     <h2>
-      Estoc
+      Stock
     </h2>
 
     {data.materials.length
@@ -3628,8 +3628,8 @@ function openCommercial(
                 key={m.id}
                 title={
                   Number(m.quantitat)<=4
-                    ? 'Estoc baix: 4 unitats o menys'
-                    : 'Estoc disponible'
+                    ? 'Stock bajo: 4 unidades o menos'
+                    : 'Stock disponible'
                 }
               >
                 <span>
@@ -3645,7 +3645,7 @@ function openCommercial(
         </div>
 
       : <div className="empty">
-          No hi ha articles d'estoc.
+          No hay artículos de stock.
         </div>
     }
 
@@ -3687,7 +3687,7 @@ const missingClient=
   const giftTasks=
     invitationTasks.filter(
       t=>
-        t.grup==='Regals'
+        t.grup==="Regalos"
     )
 
   function giftTask(keywords){
@@ -3738,7 +3738,7 @@ const missingClient=
             .toLowerCase()
 
         return (
-          name.includes('regal')
+          name.includes('regalo')
           &&
           (
             name.includes('entreg')
@@ -3753,7 +3753,7 @@ const missingClient=
 
     if(!task){
       return {
-        text:'Sense tasca',
+        text:"Sin tarea",
         className:'grey'
       }
     }
@@ -3783,7 +3783,7 @@ const missingClient=
             task.template_id
           ]
         )||
-        'Pendent',
+        "Pendiente",
       className:'orange'
     }
   }
@@ -3794,15 +3794,15 @@ const missingClient=
       <div className="inv">
 
         <b>
-          Invitació {n}
+          Invitación {n}
         </b>
 
         <strong>
-          {co?.nom||'Comercial pendent'}
+          {co?.nom||"Comercial pendiente"}
         </strong>
 
         <span>
-          {c?.empresa||'Client pendent'}
+          {c?.empresa||"Cliente pendiente"}
         </span>
 
       </div>
@@ -3825,7 +3825,7 @@ const missingClient=
                 )
               }
             >
-              + Assignar comercial
+              + Asignar comercial
             </button>
           }
 
@@ -3835,8 +3835,8 @@ const missingClient=
               disabled={missingCommercial}
               title={
                 missingCommercial
-                  ? 'Primer has d’assignar un comercial'
-                  : 'Assignar client'
+                  ? 'Primero debes asignar un comercial'
+                  : "Asignar cliente"
               }
               onClick={
                 ()=>openMatch(
@@ -3846,7 +3846,7 @@ const missingClient=
                 )
               }
             >
-              + Assignar client
+              + Asignar cliente
             </button>
           }
 
@@ -3866,7 +3866,7 @@ const missingClient=
               )
             }
           >
-            Editar assignació
+            Editar asignación
           </button>
         </div>
       }
@@ -3876,7 +3876,7 @@ const missingClient=
         <div className="clientDetailHead">
 
           <h3>
-            Client {n}
+            Cliente {n}
             {c
               ? ` · ${c.empresa}`
               : ''
@@ -3891,7 +3891,7 @@ const missingClient=
                 ()=>openClient(c.id)
               }
             >
-              Editar client
+              Editar cliente
             </button>
           }
 
@@ -3904,12 +3904,12 @@ const missingClient=
               <div className="detailGrid">
 
                 <Detail
-                  label="Client / empresa"
+                  label="Cliente / empresa"
                   value={c.empresa}
                 />
 
                 <Detail
-                  label="Nom"
+                  label="Nombre"
                   value={c.nom_client}
                 />
 
@@ -3919,13 +3919,13 @@ const missingClient=
                 />
 
                <Detail
-  label="Telèfon"
+  label="Teléfono"
   value={c.telefon}
   neutralMissing
 />
 
                 <Detail
-                  label="Correu"
+                  label="Correo"
                   value={c.correu}
                 />
 
@@ -3935,14 +3935,14 @@ const missingClient=
                 />
 
                 <Detail
-                  label="Data naixement"
+                  label="Fecha de nacimiento"
                   value={fmtDate(
                     c.data_naixement
                   )}
                 />
 
                 <Detail
-                  label="Nacionalitat"
+                  label="Nacionalidad"
                   value={c.nacionalitat}
                 />
 
@@ -3952,7 +3952,7 @@ const missingClient=
                 />
 
                 <Detail
-                  label="Nom samarreta"
+                  label="Nombre en la camiseta"
                   value={c.nom_samarreta}
                 />
 
@@ -3964,7 +3964,7 @@ const missingClient=
                 <div className="giftStatusHead">
 
                   <div className="giftStatusTitle">
-                    Estat del regal
+                    Estado del regalo
                   </div>
 
                   {can('gifts_edit')&&
@@ -3973,11 +3973,11 @@ const missingClient=
                       onClick={
                         ()=>openMatchTaskGroup(
                           partitId,
-                          'Regals'
+                          "Regalos"
                         )
                       }
                     >
-                      Editar regal
+                      Editar regalo
                     </button>
                   }
 
@@ -4017,7 +4017,7 @@ const missingClient=
                   <div className="giftStatusRow giftStatusFinal">
 
                     <span>
-                      Estat regal
+                      Estado del regalo
                     </span>
 
                     {(()=>{
@@ -4047,7 +4047,7 @@ const missingClient=
             </>
 
           : <div className="empty smallEmpty">
-              Sense client assignat.
+              Sin cliente asignado.
             </div>
         }
 
@@ -4080,7 +4080,7 @@ function Detail({
       : ''
   }
 >
-          {value||'Pendent'}
+          {value||"Pendiente"}
         </b>
 
       </div>
@@ -4093,8 +4093,8 @@ function Detail({
     return <>
 
       <PageHead
-        title="Calendari"
-        subtitle="Calendari i assignacions VIP de la temporada."
+        title="Calendario"
+        subtitle="Calendario y asignaciones VIP de la temporada."
         action={
   can('clients_create')
     ? <button
@@ -4106,7 +4106,7 @@ function Detail({
           )
         }
       >
-        + Nou partit
+        + Nuevo partido
       </button>
     : null
 }
@@ -4120,7 +4120,7 @@ function Detail({
           <input
             className="partitsSearch"
             type="search"
-            placeholder="Buscar partit..."
+            placeholder="Buscar partido..."
             value={partitsSearch}
             onChange={
               e=>{
@@ -4149,7 +4149,7 @@ function Detail({
                 }
               }
             >
-              Esborrar
+              Borrar
             </button>
 
           }
@@ -4164,12 +4164,12 @@ function Detail({
             <thead>
 
               <tr>
-                <th>Partit</th>
-                <th>Data</th>
+                <th>Partido</th>
+                <th>Fecha</th>
                 <th>Hora</th>
-                <th>Estat</th>
-                <th>Invitació 1</th>
-                <th>Invitació 2</th>
+                <th>Estado</th>
+                <th>Invitación 1</th>
+                <th>Invitación 2</th>
                 <th></th>
               </tr>
 
@@ -4191,9 +4191,9 @@ function Detail({
                     <tr
                       key={p.id}
                       className={
-                        p.estat_partit==='Jugat'
+                        p.estat_partit==="Jugado"
                           ? 'played'
-                          : p.estat_partit==='Cancel·lat'
+                          : p.estat_partit==='Cancelado'
                           ? 'cancelled'
                           : ''
                       }
@@ -4202,7 +4202,7 @@ function Detail({
                       <td>
 
                         <b>
-                          Club Mediterrània - {p.rival}
+                          Club Mediterráneo - {p.rival}
                         </b>
 
                         <div className="muted">
@@ -4241,9 +4241,9 @@ function Detail({
                         <span
                           className={
                             `tag ${
-                              p.estat_partit==='Jugat'
+                              p.estat_partit==="Jugado"
                                 ? 'green'
-                                : p.estat_partit==='Cancel·lat'
+                                : p.estat_partit==='Cancelado'
                                 ? 'dark'
                                 : 'blue'
                             }`
@@ -4304,7 +4304,7 @@ function Detail({
 >
   {can('matches_edit')
     ? 'Obrir / editar'
-    : 'Veure'
+    : "Ver"
   }
 </button>
 
@@ -4324,7 +4324,7 @@ function Detail({
                     colSpan="7"
                     className="empty"
                   >
-                    No s'ha trobat cap partit.
+                    No se ha encontrado ningún partido.
                   </td>
 
                 </tr>
@@ -4348,8 +4348,8 @@ function Detail({
     return <>
 
       <PageHead
-        title="Clients"
-        subtitle="Base única amb dades i historial de partits."
+        title="Clientes"
+        subtitle="Base única con datos e historial de partidos."
         action={
   can('clients_create')
     ? <button
@@ -4358,7 +4358,7 @@ function Detail({
           ()=>openClient(null)
         }
       >
-        + Nou client
+        + Nuevo cliente
       </button>
     : null
 }
@@ -4487,13 +4487,13 @@ function Detail({
               (a.empresa||'')
                 .localeCompare(
                   b.empresa||'',
-                  'ca'
+                  'es'
                 )
               ||
               (a.nom_client||'')
                 .localeCompare(
                   b.nom_client||'',
-                  'ca'
+                  'es'
                 )
             )
           }
@@ -4506,7 +4506,7 @@ function Detail({
         <div className="toolbar">
 
           <input
-            placeholder="Buscar client, persona, comercial o partit..."
+            placeholder="Buscar cliente, persona, comercial o partido..."
             value={clientsSearch}
             onChange={
               e=>{
@@ -4535,7 +4535,7 @@ function Detail({
                 }
               }
             >
-              Esborrar
+              Borrar
             </button>
 
           }
@@ -4550,14 +4550,14 @@ function Detail({
             <thead>
 
               <tr>
-                <th>Client / persona</th>
+                <th>Cliente / persona</th>
                 <th>Comercial</th>
-                <th>Partits</th>
-                <th>Contacte</th>
+                <th>Partidos</th>
+                <th>Contacto</th>
                 <th>DNI</th>
-                <th>Naixement</th>
+                <th>Nacimiento</th>
                 <th>Talla</th>
-                <th>Nom samarreta</th>
+                <th>Nombre en la camiseta</th>
                 <th></th>
               </tr>
 
@@ -4594,7 +4594,7 @@ function Detail({
                         </b>
 
                         <div className="muted">
-                          {c.nom_client||'Nom pendent'}
+                          {c.nom_client||"Nombre pendiente"}
                         </div>
 
                       </td>
@@ -4623,7 +4623,7 @@ function Detail({
                                     type="button"
                                     className="chip"
                                     style={{cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
-                                    title={`Obrir partit: ${p.rival}`}
+                                    title={`Abrir partido: ${p.rival}`}
                                     onClick={e=>{
                                       e.stopPropagation()
                                       openMatch(p.id)
@@ -4636,7 +4636,7 @@ function Detail({
                               )
 
                             : <span className="muted">
-                                Sense partit
+                                Sin partido
                               </span>
                           }
 
@@ -4686,7 +4686,7 @@ function Detail({
                         >
                           {can('clients_edit')
   ? 'Editar'
-  : 'Veure'
+  : "Ver"
 }
                         </button>
 
@@ -4735,7 +4735,7 @@ function Detail({
       ...taskResponsibles.map(
         responsible=>[responsible,responsible]
       ),
-      ['unassigned','Sense assignar']
+      ['unassigned',"Sin asignar"]
     ]
 
     const validResponsibleValues=[
@@ -4856,10 +4856,10 @@ function Detail({
           return counts
         },
         {
-          'Vençuda':0,
-          'Avui':0,
-          'Urgent':0,
-          'Pròxima':0,
+          "Vencida":0,
+          "Hoy":0,
+          "Urgente":0,
+          "Próxima":0,
           'Planificada':0,
           'Completada':0
         }
@@ -4971,9 +4971,9 @@ function Detail({
               textAlign:'center'
             }}
           >
-            Pàgina {currentPage} de {pageCount}
+            Página {currentPage} de {pageCount}
             {' · '}
-            {visible.length} tasques
+            {visible.length} tareas
           </span>
 
           <button
@@ -4981,7 +4981,7 @@ function Detail({
             disabled={currentPage>=pageCount}
             onClick={()=>goToPage(currentPage+1)}
           >
-            Següent →
+            Siguiente →
           </button>
 
         </div>
@@ -5006,8 +5006,8 @@ function Detail({
     return <>
 
       <PageHead
-        title="Tasques"
-        subtitle="Action items generats segons la data del partit i la planificació."
+        title="Tareas"
+        subtitle="Acciones generadas según la fecha del partido y la planificación."
       />
 
 
@@ -5028,15 +5028,15 @@ function Detail({
             }
           >
             <option value="all">
-              Totes
+              Todas
             </option>
 
             <option value="pending">
-              Només pendents
+              Solo pendientes
             </option>
 
             <option value="completed">
-              Només completades
+              Solo completadas
             </option>
           </select>
 
@@ -5054,11 +5054,11 @@ function Detail({
             }
           >
             <option value="chrono">
-              Cronològic: primera tasca → més llunyana
+              Cronológico: primera tarea → más lejana
             </option>
 
             <option value="priority">
-              Per prioritat
+              Por prioridad
             </option>
           </select>
 
@@ -5066,8 +5066,8 @@ function Detail({
           <TaskMultiFilter
             values={selectedPriorities}
             options={TASK_PRIORITY_FILTERS}
-            allLabel="Totes les prioritats"
-            selectionLabel="prioritats seleccionades"
+            allLabel="Todas las prioridades"
+            selectionLabel="prioridades seleccionadas"
             ariaLabel="Prioritats"
             counts={priorityCounts}
             onChange={priority=>
@@ -5084,8 +5084,8 @@ function Detail({
           <TaskMultiFilter
             values={selectedGroups}
             options={groupOrder}
-            allLabel="Tots els grups"
-            selectionLabel="grups seleccionats"
+            allLabel="Todos los grupos"
+            selectionLabel="grupos seleccionados"
             ariaLabel="Grups"
             onChange={group=>
               rememberTaskFilters(
@@ -5101,8 +5101,8 @@ function Detail({
           <TaskMultiFilter
             values={selectedResponsibles}
             options={responsibleFilterOptions}
-            allLabel="Tots els responsables"
-            selectionLabel="responsables seleccionats"
+            allLabel="Todos los responsables"
+            selectionLabel="responsables seleccionados"
             ariaLabel="Responsables"
             onChange={responsible=>
               rememberTaskFilters(
@@ -5129,7 +5129,7 @@ function Detail({
           >
 
             <option value="all">
-              Tots els partits
+              Todos los partidos
             </option>
 
             {orderedMatches.map(
@@ -5138,11 +5138,11 @@ function Detail({
                   key={p.id}
                   value={p.id}
                   style={
-                    p.estat_partit==='Jugat'
+                    p.estat_partit==="Jugado"
                       ? {
                           background:'#e7f6ed'
                         }
-                      : p.estat_partit==='Cancel·lat'
+                      : p.estat_partit==='Cancelado'
                       ? {
                           background:'#29313a',
                           color:'white'
@@ -5152,16 +5152,16 @@ function Detail({
                 >
 
                   {p.id===nextMatch?.id
-                    ? '★ PRÒXIM · '
+                    ? "★ PRÓXIMO · "
                     : ''
                   }
 
                   {fmtDate(p.data)}
-                  {' · Club Mediterrània - '}
+                  {" · Club Mediterráneo - "}
                   {p.rival}
 
-                  {p.estat_partit==='Jugat'
-                    ? ' · Jugat'
+                  {p.estat_partit==="Jugado"
+                    ? " · Jugado"
                     : ''
                   }
 
@@ -5185,12 +5185,12 @@ function Detail({
           >
 
             <option value="all">
-              Tots els comercials
+              Todos los comerciales
             </option>
 
             {data.comercials.slice().sort((a,b)=>
               Number(isSecond(a.nom))-Number(isSecond(b.nom)) ||
-              (a.nom||'').localeCompare(b.nom||'','ca')
+              (a.nom||'').localeCompare(b.nom||'','es')
             ).map(
               c=>
                 <option
@@ -5217,7 +5217,7 @@ function Detail({
 
             <input
               type="search"
-              placeholder="Buscar tasca, client, comercial o partit..."
+              placeholder="Buscar tarea, cliente, comercial o partido..."
               value={f.q}
               onChange={
                 e=>
@@ -5255,12 +5255,12 @@ function Detail({
             <thead>
 
               <tr>
-                <th>Data límit</th>
-                <th>Partit</th>
-                <th>Client / comercial</th>
-                <th>Tasca</th>
+                <th>Fecha límite</th>
+                <th>Partido</th>
+                <th>Cliente / comercial</th>
+                <th>Tarea</th>
                 <th>Responsable</th>
-                <th>Estat actual</th>
+                <th>Estado actual</th>
                 <th>Prioritat</th>
                 <th></th>
               </tr>
@@ -5394,7 +5394,7 @@ function Detail({
 
           <div className="muted">
             {t.data_limit
-              ? `${daysBetween(t.data_limit)} dies`
+              ? `${daysBetween(t.data_limit)} días`
               : ''
             }
           </div>
@@ -5413,11 +5413,11 @@ function Detail({
 
           {c?.empresa||
            c?.nom_client||
-           'Client pendent'}
+           "Cliente pendiente"}
 
           <div className="muted">
             {co?.nom||
-             'Comercial pendent'}
+             "Comercial pendiente"}
           </div>
 
         </td>
@@ -5446,7 +5446,7 @@ function Detail({
                 </span>
 
                 <div className="muted manualOriginalState">
-                  Estat real: {t.estat_actual||'—'}
+                  Estado real: {t.estat_actual||'—'}
                 </div>
 
               </div>
@@ -5484,7 +5484,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                 className={
                   t.completada
                     ? 'ok'
-                    : t.estat_actual==='No omplert'
+                    : t.estat_actual==='No completado'
                     ? 'missing'
                     : ''
                 }
@@ -5503,11 +5503,11 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
               `tag ${
                 pri==='Completada'
                   ? 'green'
-                  : pri==='Vençuda'
+                  : pri==="Vencida"
                   ? 'red'
-                  : ['Avui','Urgent'].includes(pri)
+                  : ["Hoy","Urgente"].includes(pri)
                   ? 'orange'
-                  : pri==='Pròxima'
+                  : pri==="Próxima"
                   ? 'yellow'
                   : 'grey'
               }`
@@ -5529,12 +5529,12 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                 className="navArrow"
                 title={
                   isAssignment
-                    ? 'Editar l’assignació'
+                    ? "Editar la asignación"
                     : isClientTask && c
-                    ? 'Anar a la fitxa del client'
+                    ? "Ir a la ficha del cliente"
                     : isCommercialTask && co
-                    ? 'Anar a la fitxa del comercial'
-                    : 'Assignar o crear les dades pendents'
+                    ? "Ir a la ficha del comercial"
+                    : "Asignar o crear los datos pendientes"
                 }
                 onClick={openTaskSource}
               >
@@ -5548,7 +5548,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
 
               <button
                 className="taskConfirm"
-                title="Confirmar com a completada"
+                title="Confirmar como completada"
                 onClick={
                   ()=>confirmTaskDone(t)
                 }
@@ -5662,7 +5662,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
 
       <PageHead
         title="Stock"
-        subtitle="Control d'existències i moviments d'entrada/sortida."
+        subtitle="Control de existencias y movimientos de entrada/salida."
       />
 
 
@@ -5673,7 +5673,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
           <div className="stockPanelTitle">
 
             <h2>
-              Estoc actual
+              Stock actual
             </h2>
 
             {(can('materials_create') || can('materials_delete'))&&
@@ -5694,7 +5694,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                     ()=>openMaterial(null)
                   }
                 >
-                  + Nou material
+                  + Nuevo material
                 </button>}
 
               </div>
@@ -5711,7 +5711,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
 
                 <tr>
                   <th>Material</th>
-                  <th>Quantitat</th>
+                  <th>Cantidad</th>
                 </tr>
 
               </thead>
@@ -5761,7 +5761,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
           <div className="stockPanelTitle">
 
             <h2>
-              Moviments
+              Movimientos
             </h2>
 
             {(can('stock_entry') || can('stock_exit'))&&
@@ -5769,7 +5769,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                 className="btn primary"
                 onClick={openMovement}
               >
-                + Moviment
+                + Movimiento
               </button>
             }
 
@@ -5783,11 +5783,11 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
               <thead>
 
                 <tr>
-                  <th>Data</th>
-                  <th>Materials</th>
-                  <th>Unitats</th>
-                  <th>Partit</th>
-                  <th>Client</th>
+                  <th>Fecha</th>
+                  <th>Materiales</th>
+                  <th>Unidades</th>
+                  <th>Partido</th>
+                  <th>Cliente</th>
                   <th>Comercial</th>
                   <th></th>
                 </tr>
@@ -5840,7 +5840,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                             <div key={movement.id}>
                               <b
                                 className={
-                                  movement.tipus==='Sortida'
+                                  movement.tipus==='Salida'
                                     ? 'missing'
                                     : 'ok'
                                 }
@@ -5925,7 +5925,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
   async function deleteMovementGroup(items){
 
     if(!can('stock_movement_delete')){
-      notify('No tens permís per eliminar moviments')
+      notify("No tienes permiso para eliminar movimientos")
       return
     }
 
@@ -5939,8 +5939,8 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
     if(
       !confirm(
         movements.length>1
-          ? 'Segur que vols eliminar aquest grup de moviments? L’estoc es recalcularà.'
-          : 'Segur que vols eliminar aquest moviment? L’estoc es recalcularà.'
+          ? "¿Seguro que quieres eliminar este grupo de movimientos? El stock se recalculará."
+          : "¿Seguro que quieres eliminar este movimiento? El stock se recalculará."
       )
     )return
 
@@ -5957,7 +5957,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
 
       if(!material){
         notify(
-          'No s’ha trobat un dels materials del moviment'
+          "No se ha encontrado uno de los materiales del movimiento"
         )
         return
       }
@@ -6080,8 +6080,8 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
 
     notify(
       movements.length>1
-        ? 'Moviments eliminats'
-        : 'Moviment eliminat'
+        ? "Movimientos eliminados"
+        : "Movimiento eliminado"
     )
   }
 
@@ -6112,7 +6112,7 @@ const commercialSort=
     baseCommercial(a.nom)
       .localeCompare(
         baseCommercial(b.nom),
-        'ca'
+        'es'
       )
 
 
@@ -6141,8 +6141,8 @@ const second=
     return <>
 
       <PageHead
-        title="Configuració"
-        subtitle="Comercials i planificació de les tasques."
+        title="Configuración"
+        subtitle="Comerciales y planificación de las tareas."
         action={
           can('users_view') && <button
                 className="btn primary"
@@ -6153,7 +6153,7 @@ const second=
                     )
                 }
               >
-                Gestionar usuaris
+                Gestionar usuarios
               </button>}
       />
 
@@ -6167,13 +6167,13 @@ const second=
   <div>
 
     <h2>
-      Comercials
+      Comerciales
     </h2>
 
     <div className="muted">
       {configCommercialFilter==='all'
-        ? 'Tots els comercials'
-        : 'Només comercials disponibles'
+        ? "Todos los comerciales"
+        : "Solo comerciales disponibles"
       }
     </div>
 
@@ -6217,7 +6217,7 @@ const second=
       />
 
       {configCommercialFilter==='all'
-        ? 'Tots'
+        ? "Todos"
         : 'Disponibles'
       }
 
@@ -6234,7 +6234,7 @@ const second=
           )
         }
       >
-        + Primera assistència
+        + Primera asistencia
       </button>
 
       <button
@@ -6246,7 +6246,7 @@ const second=
           )
         }
       >
-        + Segona assistència
+        + Segunda asistencia
       </button>
     </>}
 
@@ -6256,10 +6256,10 @@ const second=
 
 
           <h3>
-            Comercials · primera assistència
+            Comerciales · primera asistencia
           </h3>
 
-          <div className="configList" role="region" aria-label="Comercials de primera assistència" tabIndex={0}
+          <div className="configList" role="region" aria-label="Comerciales de primera asistencia" tabIndex={0}
             style={{height:'min(34vh, 340px)',maxHeight:'none',minHeight:0,overflowY:'scroll',overflowX:'auto',display:'block',flex:'none',scrollbarGutter:'stable',scrollbarWidth:'auto',overscrollBehaviorY:'contain'}}>
 
             {first.map(
@@ -6275,10 +6275,10 @@ const second=
 
 
           <h3 className="secondTitle">
-            Comercials · segona assistència
+            Comerciales · segunda asistencia
           </h3>
 
-          <div className="configList" role="region" aria-label="Comercials de segona assistència" tabIndex={0}
+          <div className="configList" role="region" aria-label="Comerciales de segunda asistencia" tabIndex={0}
             style={{height:'min(34vh, 340px)',maxHeight:'none',minHeight:0,overflowY:'scroll',overflowX:'auto',display:'block',flex:'none',scrollbarGutter:'stable',scrollbarWidth:'auto',overscrollBehaviorY:'contain'}}>
 
             {second.map(
@@ -6300,13 +6300,13 @@ const second=
           <div className="panelHead">
 
             <h2>
-              Plantilla de tasques
+              Plantilla de tareas
             </h2>
 
             <div className="configActions">
 
               <select
-                aria-label="Filtrar plantilles per responsable"
+                aria-label="Filtrar plantillas por responsable"
                 value={configTaskResponsibleFilter}
                 onChange={
                   e=>
@@ -6316,14 +6316,10 @@ const second=
                 }
               >
                 <option value="all">
-                  Tots els responsables
+                  Todos los responsables
                 </option>
 
-                {[
-                  'Cristina',
-                  'Marta',
-                  'Sergi'
-                ].map(
+                {taskResponsibles.map(
                   responsable=>
                     <option
                       key={responsable}
@@ -6334,7 +6330,7 @@ const second=
                 )}
 
                 <option value="unassigned">
-                  Sense assignar
+                  Sin asignar
                 </option>
               </select>
 
@@ -6345,7 +6341,7 @@ const second=
                     ()=>openTemplate(null)
                   }
                 >
-                  + Nova
+                  + Nueva
                 </button>
               }
 
@@ -6354,7 +6350,7 @@ const second=
           </div>
 
 
-          <div className="configList" role="region" aria-label="Plantilla de tasques" tabIndex={0}
+          <div className="configList" role="region" aria-label="Plantilla de tareas" tabIndex={0}
             style={{height:'min(70vh, 720px)',maxHeight:'none',minHeight:0,overflowY:'scroll',overflowX:'auto',display:'block',flex:'none',scrollbarGutter:'stable',scrollbarWidth:'auto',overscrollBehaviorY:'contain'}}>
 
             {data.templates
@@ -6387,12 +6383,12 @@ const second=
                         : ''
                       }
                       {t.dies_offset}
-                      {' dies · '}
+                      {" días · "}
                       {t.grup}
-                      {' · correcte: '}
+                      {" · correcto: "}
                       {t.estat_correcte}
                       {' · Responsable: '}
-                      {t.responsable||'Sense assignar'}
+                      {t.responsable||"Sin asignar"}
                     </div>
 
                   </div>
@@ -6444,11 +6440,11 @@ const second=
             <div>
 
               <h2>
-                Còpies de seguretat
+                Copias de seguridad
               </h2>
 
               <div className="muted">
-                Descarrega una còpia completa de les dades de l'aplicació en format Excel.
+                Descarga una copia completa de los datos de la aplicación en formato Excel.
               </div>
 
             </div>
@@ -6461,7 +6457,7 @@ const second=
   <div>
 
     <div className="muted">
-      Última descàrrega Excel
+      Última descarga Excel
     </div>
 
     <div id="backupLastDownload">
@@ -6477,10 +6473,10 @@ const second=
 
             {' · '}
 
-            {lastBackup.user_email||'Usuari'}
+            {lastBackup.user_email||"Usuario"}
           </>
 
-        : 'Encara no hi ha cap descàrrega registrada.'
+        : "Todavía no hay ninguna descarga registrada."
       }
 
     </div>
@@ -6495,8 +6491,8 @@ const second=
     disabled={busy}
   >
     {busy
-      ? 'Generant còpia...'
-      : 'Descarregar còpia Excel'
+      ? "Generando copia..."
+      : "Descargar copia Excel"
     }
   </button>
 
@@ -6508,17 +6504,17 @@ const second=
   <div>
 
     <b>
-      Backup automàtic de base de dades
+      Copia de seguridad automática de la base de datos
     </b>
 
     <div className="muted">
-      Còpia tècnica de Supabase per restaurar la base de dades en cas d'incident.
+      Copia técnica de Supabase para restaurar la base de datos en caso de incidente.
     </div>
 
   </div>
 
   <div className="backupAutoBadge">
-    ● Actiu · Diari · 90 dies
+    ● Activo · Diario · 90 días
   </div>
 
 </div>
@@ -6559,7 +6555,7 @@ const second=
 
           <div className="muted">
             {used
-              ? `Assignat a un partit${assignedMatch?.rival ? ` · ${assignedMatch.rival}` : ''}`
+              ? `Asignado a un partido${assignedMatch?.rival ? ` · ${assignedMatch.rival}` : ''}`
               : 'Disponible'
             }
           </div>
@@ -6679,7 +6675,7 @@ const second=
     }
 
     notify(
-      'Primer cal assignar o crear el client.'
+      "Primero hay que asignar o crear el cliente."
     )
 
     return
@@ -6694,7 +6690,7 @@ const second=
     }
 
     notify(
-      'Primer cal assignar el comercial.'
+      "Primero hay que asignar el comercial."
     )
 
     return
@@ -6725,7 +6721,7 @@ const second=
 
           <div className="muted">
             {t.data_limit
-              ? `${daysBetween(t.data_limit)} dies`
+              ? `${daysBetween(t.data_limit)} días`
               : ''
             }
           </div>
@@ -6747,10 +6743,10 @@ const second=
 
           <div className="who">
             {c?.empresa||
-             'Client pendent'}
+             "Cliente pendiente"}
             {' · '}
             {co?.nom||
-             'Comercial pendent'}
+             "Comercial pendiente"}
           </div>
 
 
@@ -6799,10 +6795,10 @@ const second=
                     className="navArrow"
                     title={
                       isAssignment
-                        ? 'Anar a les assignacions'
+                        ? "Ir a las asignaciones"
                         : isClientTask
-                        ? 'Anar a la fitxa del client'
-                        : 'Anar a la fitxa del comercial'
+                        ? "Ir a la ficha del cliente"
+                        : "Ir a la ficha del comercial"
                     }
                     onClick={
                       navigateToSource
@@ -6815,7 +6811,7 @@ const second=
                     className={
                       t.completada
                         ? 'ok'
-                        : t.estat_actual==='No omplert'
+                        : t.estat_actual==='No completado'
                         ? 'missing'
                         : ''
                     }
@@ -6827,7 +6823,7 @@ const second=
               {can('tasks_force_complete') && !t.completada&&
                 <button
                   className="taskConfirm"
-                  title="Confirmar com a completada"
+                  title="Confirmar como completada"
                   onClick={
                     ()=>confirmTaskDone(t)
                   }
@@ -6848,11 +6844,11 @@ const second=
             `tag ${
               pri==='Completada'
                 ? 'green'
-                : pri==='Vençuda'
+                : pri==="Vencida"
                 ? 'red'
-                : ['Avui','Urgent'].includes(pri)
+                : ["Hoy","Urgente"].includes(pri)
                 ? 'orange'
-                : pri==='Pròxima'
+                : pri==="Próxima"
                 ? 'yellow'
                 : 'grey'
             }`
@@ -7006,7 +7002,7 @@ const second=
               data:'',
               hora:'',
               estat_data:'Provisional',
-              estat_partit:'Planificat',
+              estat_partit:"Planificado",
               notes:''
             }
       )
@@ -7137,7 +7133,7 @@ const second=
             )
             .localeCompare(
               baseCommercial(b.nom),
-              'ca'
+              'es'
             )
         )
     }
@@ -7165,7 +7161,7 @@ const second=
 
       if(!can('clients_create')){
         notify(
-          'No tens permís per crear clients'
+          "No tienes permiso para crear clientes"
         )
         return
       }
@@ -7175,7 +7171,7 @@ const second=
 
       if(!commercialId){
         notify(
-          'Selecciona primer el comercial'
+          'Selecciona primero el comercial'
         )
         return
       }
@@ -7237,7 +7233,7 @@ const second=
 
       if(!can('clients_create')){
         notify(
-          'No tens permís per crear clients'
+          "No tienes permiso para crear clientes"
         )
         return
       }
@@ -7256,14 +7252,14 @@ const second=
           clientForm.comercial_id
       ){
         notify(
-          'El comercial de la invitació ha canviat. Torna a obrir el formulari.'
+          "El comercial de la invitación ha cambiado. Vuelve a abrir el formulario."
         )
         return
       }
 
       if(!clientForm.empresa.trim()){
         notify(
-          'Indica el client / empresa'
+          "Indica el cliente / empresa"
         )
         return
       }
@@ -7323,7 +7319,7 @@ const second=
                 (a.empresa||'')
                   .localeCompare(
                     b.empresa||'',
-                    'ca'
+                    'es'
                   )
             )
           })
@@ -7343,7 +7339,7 @@ const second=
         setInlineClient(null)
 
         notify(
-          'Client creat i seleccionat. Prem Guardar per confirmar l’assignació al partit.'
+          "Cliente creado y seleccionado. Pulsa Guardar para confirmar la asignación al partido."
         )
 
       }
@@ -7351,7 +7347,7 @@ const second=
 
         notify(
           e.message||
-          'No s’ha pogut crear el client'
+          "No se ha podido crear el cliente"
         )
 
       }
@@ -7367,7 +7363,7 @@ const second=
     async function save(){
 
   if(!canEditMatchView){
-    notify('No tens permís per modificar aquest partit')
+    notify("No tienes permiso para modificar este partido")
     return
   }
 
@@ -7675,13 +7671,13 @@ const second=
         }
         catch(e){
           notify(
-            `No s'ha pogut actualitzar la vista després del desament: ${e.message}. Recarrega la pàgina.`
+            `No se ha podido actualizar la vista después de guardar: ${e.message}. Recarga la página.`
           )
           return
         }
 
         notify(
-          'Partit guardat'
+          "Partido guardado"
         )
 
       }
@@ -7704,7 +7700,7 @@ const second=
 
   if(!can('matches_delete')){
     notify(
-      'No tens permís per eliminar partits'
+      "No tienes permiso para eliminar partidos"
     )
     return
   }
@@ -7712,7 +7708,7 @@ const second=
   if(
     !modal.id ||
         !confirm(
-          `Segur que vols eliminar el partit contra "${form.rival||'rival pendent'}" del ${fmtDate(form.data)}?\n\nTambé s’eliminaran totes les invitacions i tasques relacionades. Aquesta acció no es pot desfer.`
+          `¿Seguro que quieres eliminar el partido contra "${form.rival||"rival pendiente"}" del ${fmtDate(form.data)}?\n\nTambién se eliminarán todas las invitaciones y tareas relacionadas. Esta acción no se puede deshacer.`
         )
       )return
 
@@ -7742,7 +7738,7 @@ const second=
         await reload(true)
 
         notify(
-          'Partit eliminat'
+          "Partido eliminado"
         )
 
       }
@@ -7785,9 +7781,9 @@ const second=
         <h2>
   {modal.id
     ? canEditMatch
-      ? 'Obrir / editar partit'
-      : 'Veure partit'
-    : 'Nou partit'
+      ? "Obrir / editar partido"
+      : "Ver partido"
+    : "Nuevo partido"
   }
 </h2>
 
@@ -7809,7 +7805,7 @@ disabled={!canEditMatch}
           </Field>
 
 
-          <Field label="Competició">
+          <Field label="Competición">
             <input
 disabled={!canEditMatch}
               value={form.competicio||''}
@@ -7827,8 +7823,8 @@ disabled={!canEditMatch}
           <Field
             label={
               form.data
-                ? `Data · ${fmtWeekday(form.data)}`
-                : 'Data'
+                ? `Fecha · ${fmtWeekday(form.data)}`
+                : "Fecha"
             }
           >
             <input
@@ -7868,7 +7864,7 @@ disabled={!canEditMatch}
           </Field>
 
 
-          <Field label="Estat de la data">
+          <Field label="Estado de la fecha">
             <select
 disabled={!canEditMatch}
               value={form.estat_data}
@@ -7893,7 +7889,7 @@ disabled={!canEditMatch}
           </Field>
 
 
-          <Field label="Estat del partit">
+          <Field label="Estado del partido">
             <select
 disabled={!canEditMatch}
               value={form.estat_partit}
@@ -7906,9 +7902,9 @@ disabled={!canEditMatch}
               }
             >
               {[
-                'Planificat',
-                'Jugat',
-                'Cancel·lat'
+                "Planificado",
+                "Jugado",
+                'Cancelado'
               ].map(
                 x=>
                   <option key={x}>
@@ -7920,7 +7916,7 @@ disabled={!canEditMatch}
 
 
           <Field
-            label="Notes"
+            label="Notas"
             full
           >
             <textarea
@@ -7940,7 +7936,7 @@ disabled={!canEditMatch}
 
 
         <h3 className="assignmentTitle">
-          Assignacions
+          Asignaciones
         </h3>
 
 
@@ -7957,7 +7953,7 @@ disabled={!canEditMatch}
               >
 
                 <h3>
-                  Invitació {n}
+                  Invitación {n}
                 </h3>
 
 
@@ -7998,7 +7994,7 @@ disabled={!canEditMatch}
                     >
 
                       <option value="">
-                        Sense assignar
+                        Sin asignar
                       </option>
 
                       {commercialOptions(n).map(
@@ -8016,7 +8012,7 @@ disabled={!canEditMatch}
                   </Field>
 
 
-                  <Field label="Client">
+                  <Field label="Cliente">
 
                     <select
                       disabled={
@@ -8066,11 +8062,11 @@ disabled={!canEditMatch}
                       <option
                         value={CREATE_CLIENT_VALUE}
                       >
-                        + Crear client
+                        + Crear cliente
                       </option>
 
                       <option value="">
-                        Sense assignar
+                        Sin asignar
                       </option>
 
                       {clientsFor(n).map(
@@ -8106,19 +8102,19 @@ disabled={!canEditMatch}
           >
 
             <h3>
-              Crear client · Invitació {
+              Crear cliente · Invitación {
                 inlineClient.slot
               }
             </h3>
 
             <p className="muted">
-              En crear-lo quedarà seleccionat en aquesta invitació. Prem Guardar al final del partit per confirmar l’assignació.
+              Al crearlo quedará seleccionado en esta invitación. Pulsa Guardar al final del partido para confirmar la asignación.
             </p>
 
 
             <div className="formgrid">
 
-              <Field label="Client / empresa *">
+              <Field label="Cliente / empresa *">
                 <input
                   autoFocus
                   disabled={savingInlineClient}
@@ -8136,7 +8132,7 @@ disabled={!canEditMatch}
               </Field>
 
 
-              <Field label="Nom persona">
+              <Field label="Nombre de la persona">
                 <input
                   disabled={savingInlineClient}
                   value={
@@ -8173,14 +8169,14 @@ disabled={!canEditMatch}
                         inlineClient.form
                           .comercial_id
                       ]?.nom||
-                      'Comercial seleccionat'
+                      "Comercial seleccionado"
                     }
                   </option>
                 </select>
               </Field>
 
 
-              <Field label="Nacionalitat">
+              <Field label="Nacionalidad">
                 <input
                   disabled={savingInlineClient}
                   value={
@@ -8198,7 +8194,7 @@ disabled={!canEditMatch}
               </Field>
 
 
-              <Field label="Correu">
+              <Field label="Correo">
                 <input
                   disabled={savingInlineClient}
                   value={
@@ -8215,7 +8211,7 @@ disabled={!canEditMatch}
               </Field>
 
 
-              <Field label="Telèfon">
+              <Field label="Teléfono">
                 <input
                   disabled={savingInlineClient}
                   value={
@@ -8249,7 +8245,7 @@ disabled={!canEditMatch}
               </Field>
 
 
-              <Field label="Data naixement">
+              <Field label="Fecha de nacimiento">
                 <input
                   disabled={savingInlineClient}
                   type="date"
@@ -8298,7 +8294,7 @@ disabled={!canEditMatch}
               </Field>
 
 
-              <Field label="Nom samarreta">
+              <Field label="Nombre en la camiseta">
                 <input
                   disabled={savingInlineClient}
                   value={
@@ -8319,7 +8315,7 @@ disabled={!canEditMatch}
               <label className="field full">
 
                 <span>
-                  Notes
+                  Notas
                 </span>
 
                 <textarea
@@ -8350,7 +8346,7 @@ disabled={!canEditMatch}
                   ()=>setInlineClient(null)
                 }
               >
-                Cancel·lar
+                Cancelar
               </button>
 
               <button
@@ -8360,8 +8356,8 @@ disabled={!canEditMatch}
               >
                 {
                   savingInlineClient
-                    ? 'Creant...'
-                    : 'Crear i seleccionar'
+                    ? 'Creando...'
+                    : "Crear y seleccionar"
                 }
               </button>
 
@@ -8401,7 +8397,7 @@ disabled={!canEditMatch}
             <summary>
 
               <b>
-                Tasques pendents
+                Tareas pendientes
               </b>
 
               <span>
@@ -8423,7 +8419,7 @@ disabled={!canEditMatch}
                     )
                   }
                 >
-                  Veure a Tasques ›
+                  Ver en Tareas ›
                 </button>
 
               </div>
@@ -8451,7 +8447,7 @@ disabled={!canEditMatch}
                           (a.nom||'')
                             .localeCompare(
                               b.nom||'',
-                              'ca',
+                              'es',
                               {
                                 sensitivity:'base'
                               }
@@ -8474,7 +8470,7 @@ disabled={!canEditMatch}
                     ? <div
                         key={g}
                         ref={
-                          g==='Regals'
+                          g==="Regalos"
                             ? matchGiftTasksRef
                             : null
                         }
@@ -8519,7 +8515,7 @@ disabled={!canEditMatch}
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
 
@@ -8694,7 +8690,7 @@ disabled={!canEditMatch}
             inv.comercial_id!==commercialId ||
             inv.client_id ||
             !match ||
-            match.estat_partit!=='Planificat' ||
+            match.estat_partit!=="Planificado" ||
             (
               match.data &&
               match.data<TODAY()
@@ -8745,7 +8741,7 @@ disabled={!canEditMatch}
         const match=maps.partits[inv.partit_id]
         if(
           !f.comercial_id || !match ||
-          match.estat_partit!=='Planificat' ||
+          match.estat_partit!=="Planificado" ||
           (match.data && match.data<TODAY()) || inv.client_id
         )return false
 
@@ -8770,7 +8766,7 @@ disabled={!canEditMatch}
 
   if(!can('clients_delete')){
     notify(
-      'No tens permís per eliminar clients'
+      "No tienes permiso para eliminar clientes"
     )
     return
   }
@@ -8778,7 +8774,7 @@ disabled={!canEditMatch}
   if(
     !modal.id ||
         !confirm(
-          'Segur que vols eliminar aquest client? Les assignacions existents quedaran sense client.'
+          "¿Seguro que quieres eliminar este cliente? Las asignaciones existentes quedarán sin cliente."
         )
       )return
 
@@ -8857,7 +8853,7 @@ disabled={!canEditMatch}
       )
 
       notify(
-        'Client eliminat'
+        "Cliente eliminado"
       )
     }
 
@@ -8867,12 +8863,12 @@ disabled={!canEditMatch}
       if(savingClientRef.current)return
 
       if(!canEditClient){
-        notify('Aquest usuari és només de lectura')
+        notify("Este usuario es de solo lectura")
         return
       }
 
       if(!f.empresa.trim()){
-        notify('Indica el client / empresa')
+        notify("Indica el cliente / empresa")
         return
       }
 
@@ -8883,13 +8879,13 @@ disabled={!canEditMatch}
         : null
 
       if(selectedInvitation && clientAssignments.length){
-        notify('Aquest client ja té un partit assignat. Tanca i torna a obrir la fitxa per consultar-lo.')
+        notify("Este cliente ya tiene un partido asignado. Cierra y vuelve a abrir la ficha para consultarlo.")
         return
       }
 
       if(selectedInvitation && !selected){
         notify(
-          'La selecció ja no és vàlida. Torna a seleccionar el partit.'
+          "La selección ya no es válida. Vuelve a seleccionar el partido."
         )
         return
       }
@@ -8936,7 +8932,7 @@ disabled={!canEditMatch}
           if(invResult.error)throw invResult.error
           if(commercialResult.error)throw commercialResult.error
           if(commercialResult.data.length){
-            throw new Error('Aquest comercial ja té una altra assignació. Selecciona una altra entrada de comercial.')
+            throw new Error("Este comercial ya tiene otra asignación. Selecciona otra entrada de comercial.")
           }
 
           const match=matchResult.data
@@ -8946,7 +8942,7 @@ disabled={!canEditMatch}
           )
 
           if(
-            match.estat_partit!=='Planificat' ||
+            match.estat_partit!=="Planificado" ||
             (match.data && match.data<TODAY()) ||
             !invitation ||
             invitation.client_id ||
@@ -8954,7 +8950,7 @@ disabled={!canEditMatch}
             (invitation.comercial_id && invitation.comercial_id!==f.comercial_id)
           ){
             throw new Error(
-              'La plaça ja no està disponible. Actualitza la vista i torna-ho a provar.'
+              "La plaza ya no está disponible. Actualiza la vista y vuelve a intentarlo."
             )
           }
 
@@ -8965,7 +8961,7 @@ disabled={!canEditMatch}
             )
           ){
             throw new Error(
-              'Aquest client ja està assignat al partit.'
+              "Este cliente ya está asignado al partido."
             )
           }
         }
@@ -9022,14 +9018,14 @@ disabled={!canEditMatch}
 
           if(assignmentError){
             if(assignmentError.code==='23505'){
-              throw new Error('No s’ha pogut assignar: el comercial o la plaça ja tenen una assignació incompatible. Actualitza la vista.')
+              throw new Error("No se ha podido asignar: el comercial o la plaza ya tienen una asignación incompatible. Actualiza la vista.")
             }
             throw assignmentError
           }
 
           if(!inv){
             throw new Error(
-              'La plaça ha canviat durant el desament. No s’ha fet l’assignació.'
+              "La plaza ha cambiado durante el guardado. No se ha realizado la asignación."
             )
           }
 
@@ -9058,8 +9054,8 @@ disabled={!canEditMatch}
 
         notify(
           assignedInvitation
-            ? 'Client guardat i assignat al partit'
-            : 'Client guardat'
+            ? "Cliente guardado y asignado al partido"
+            : "Cliente guardado"
         )
 
       }
@@ -9081,13 +9077,13 @@ disabled={!canEditMatch}
 
           notify(
             assignedInvitation
-              ? `Client i assignació guardats, però no s’han pogut sincronitzar totes les tasques: ${e.message}`
-              : `Client guardat, però no s’ha completat l’operació: ${e.message}`
+              ? `Cliente y asignación guardats, pero no se han podido sincronitzar todas las tareas: ${e.message}`
+              : `Cliente guardado, pero no se ha completado la operación: ${e.message}`
           )
 
         }
         else{
-          notify(e.message||'No s’ha pogut guardar')
+          notify(e.message||"No se ha podido guardar")
         }
 
       }
@@ -9106,16 +9102,16 @@ disabled={!canEditMatch}
         <h2>
   {modal.id
     ? canEditClient
-      ? 'Editar client'
-      : 'Veure client'
-    : 'Nou client'
+      ? "Editar cliente"
+      : "Ver cliente"
+    : "Nuevo cliente"
   }
 </h2>
 
 
         <div className="formgrid">
 
-          <Field label="Client / empresa *">
+          <Field label="Cliente / empresa *">
             <input
 disabled={!canEditClient || savingClient}
               value={f.empresa}
@@ -9130,7 +9126,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Nom persona">
+          <Field label="Nombre de la persona">
             <input
 disabled={!canEditClient || savingClient}
               value={f.nom_client||''}
@@ -9190,7 +9186,7 @@ disabled={!canEditClient || savingClient}
                   ||
                   Number(isSecond(a.nom))-Number(isSecond(b.nom))
                   ||
-                  (a.nom||'').localeCompare(b.nom||'','ca')
+                  (a.nom||'').localeCompare(b.nom||'','es')
                 )
                 .map(
                   c=>
@@ -9216,7 +9212,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Nacionalitat">
+          <Field label="Nacionalidad">
             <input
 disabled={!canEditClient || savingClient}
               value={f.nacionalitat||''}
@@ -9231,7 +9227,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Correu">
+          <Field label="Correo">
             <input
 disabled={!canEditClient || savingClient}
               value={f.correu||''}
@@ -9246,7 +9242,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Telèfon">
+          <Field label="Teléfono">
             <input
 disabled={!canEditClient || savingClient}
               value={f.telefon||''}
@@ -9276,7 +9272,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Data naixement">
+          <Field label="Fecha de nacimiento">
             <input
 disabled={!canEditClient || savingClient}
               type="date"
@@ -9320,7 +9316,7 @@ disabled={!canEditClient || savingClient}
           </Field>
 
 
-          <Field label="Nom samarreta">
+          <Field label="Nombre en la camiseta">
             <input
 disabled={!canEditClient || savingClient}
               value={f.nom_samarreta||''}
@@ -9338,7 +9334,7 @@ disabled={!canEditClient || savingClient}
           <label className="field full">
 
             <span>
-              Notes
+              Notas
             </span>
 
             <textarea
@@ -9359,24 +9355,24 @@ disabled={!canEditClient || savingClient}
 
         {clientAssignments.length>0 ? (
           <div className="assignmentBox">
-            <h3>{assignedMatchIds.length===1 ? 'Partit assignat' : 'Partits assignats'}</h3>
+            <h3>{assignedMatchIds.length===1 ? "Partido asignado" : "Partidos asignados"}</h3>
             {assignedMatchIds.map(id=>{
               const match=maps.partits[id]
               return (
                 <p key={id}>
                   {match
-                    ? [match.data ? fmtDate(match.data) : 'Data pendent', 'Club Mediterrània · '+match.rival, match.estat_partit].filter(Boolean).join(' · ')
-                    : 'Partit assignat · informació no disponible'}
+                    ? [match.data ? fmtDate(match.data) : "Fecha pendiente", "Club Mediterráneo · "+match.rival, match.estat_partit].filter(Boolean).join(' · ')
+                    : "Partido asignado · información no disponible"}
                 </p>
               )
             })}
           </div>
         ) : (
         <div className="assignmentBox">
-          <h3>Assignar a un partit</h3>
+          <h3>Asignar a un partido</h3>
 
           <label className="field full">
-            <span>Partits disponibles</span>
+            <span>Partidos disponibles</span>
 
             <select
               value={selectedInvitation}
@@ -9391,7 +9387,7 @@ disabled={!canEditClient || savingClient}
               }
             >
               <option value="">
-                No afegir cap assignació
+                No añadir ninguna asignación
               </option>
 
               {availableInvitations.map(inv=>{
@@ -9402,8 +9398,8 @@ disabled={!canEditClient || savingClient}
                   <option key={inv.id} value={inv.id}>
                     {match.rival}
                     {' · '}
-                    {match.data||'Data pendent'}
-                    {' · Assignació '}
+                    {match.data||"Fecha pendiente"}
+                    {" · Asignación "}
                     {inv.numero}
                   </option>
                 )
@@ -9413,15 +9409,15 @@ disabled={!canEditClient || savingClient}
 
           <p className="muted">
             {!f.comercial_id
-              ? 'Selecciona primer el comercial del client.'
+              ? "Selecciona primer el comercial del cliente."
               : availableInvitations.length===0
-                ? 'No hi ha places disponibles per a aquesta entrada de comercial: comprova si ja té una assignació ocupada o si hi ha partits amb places lliures.'
-                : 'En guardar, el client i el comercial quedaran assignats a la plaça seleccionada.'
+                ? "No hay plazas disponibles para esta entrada de comercial: comprueba si ya tiene una asignación ocupada o si hay partidos con plazas libres."
+                : "Al guardar, el cliente y el comercial quedarán asignados a la plaza seleccionada."
             }
           </p>
 
           {savingClient && (
-            <p role="status">Desant client...</p>
+            <p role="status">Guardando cliente...</p>
           )}
         </div>
         )}
@@ -9434,7 +9430,7 @@ disabled={!canEditClient || savingClient}
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
 
@@ -9498,7 +9494,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
 
   if(!(modal.id ? can('commercials_edit') : can('commercials_create'))){
     notify(
-      'No tens permís per modificar comercials'
+      "No tienes permiso para modificar comerciales"
     )
     return
   }
@@ -9592,7 +9588,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
       await reload(true,["comercials"])
 
       notify(
-        'Comercial guardat'
+        'Comercial guardado'
       )
     }
 
@@ -9620,16 +9616,16 @@ if(!(can('commercials_create') || can('commercials_edit'))){
 
 
       const warning=[
-        `Segur que vols eliminar el comercial "${c?.nom||''}"?`,
+        `¿Seguro que quieres eliminar el comercial "${c?.nom||''}"?`,
         '',
         invitationCount
-          ? `Es desassignarà de ${invitationCount} invitació/ns.`
-          : 'No té cap partit assignat.',
+          ? `Se desasignará de ${invitationCount} invitación/ns.`
+          : "No tiene ningún partido asignado.",
         clientCount
-          ? `${clientCount} client/s quedaran sense comercial i sense assignació de partit.`
-          : 'No té cap client vinculat.',
+          ? `${clientCount} cliente/s quedarán sin comercial y sin asignación de partido.`
+          : "No tiene ningún cliente vinculado.",
         '',
-        'El registre deixarà d’aparèixer, però quedarà constància a l’historial.'
+        "El registro dejará de aparecer, pero quedará constancia en el historial."
       ].join('\n')
 
 
@@ -9712,14 +9708,14 @@ if(!(can('commercials_create') || can('commercials_edit'))){
         )
 
         notify(
-          'Comercial eliminat'
+          'Comercial eliminado'
         )
 
       }
       catch(error){
         notify(
           error?.message ||
-          'No s’ha pogut eliminar el comercial'
+          "No se ha podido eliminar el comercial"
         )
       }
       finally{
@@ -9735,17 +9731,17 @@ if(!(can('commercials_create') || can('commercials_edit'))){
   {modal.id
     ? canEditCommercial
       ? 'Editar comercial'
-      : 'Veure comercial'
+      : "Ver comercial"
     : modal.attendance==='second'
-      ? 'Nou comercial · segona assistència'
-      : 'Nou comercial · primera assistència'
+      ? "Nuevo comercial · segunda asistencia"
+      : "Nuevo comercial · primera asistencia"
   }
 </h2>
 
 
         <div className="formgrid">
 
-          <Field label="Nom *">
+          <Field label="Nombre *">
             <input
   disabled={!canEditCommercial}
   value={f.nom}
@@ -9775,7 +9771,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
           </Field>
 
 
-          <Field label="Data naixement">
+          <Field label="Fecha de nacimiento">
            <input
   disabled={!canEditCommercial}
   type="date"
@@ -9791,7 +9787,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
           </Field>
 
 
-          <Field label="Telèfon">
+          <Field label="Teléfono">
            <input
   disabled={!canEditCommercial}
   value={f.telefon||''}
@@ -9806,7 +9802,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
           </Field>
 
 
-          <Field label="Correu">
+          <Field label="Correo">
             <input
   disabled={!canEditCommercial}
   value={f.correu||''}
@@ -9838,7 +9834,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
           {can('commercials_delete')&&modal.id&&
@@ -9892,7 +9888,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
    async function save(){
 
   if(!can('materials_create')){
-    notify('No tens permís per crear materials')
+    notify("No tienes permiso para crear materiales")
     return
   }
 
@@ -9952,7 +9948,7 @@ if(!(can('commercials_create') || can('commercials_edit'))){
       await reload(true,["materials"])
 
       notify(
-        'Material guardat'
+        'Material guardado'
       )
     }
 
@@ -9964,8 +9960,8 @@ if(!(can('commercials_create') || can('commercials_edit'))){
   {modal.id
     ? can('materials_create')
       ? 'Editar material'
-      : 'Veure material'
-    : 'Nou material'
+      : "Ver material"
+    : "Nuevo material"
   }
 </h2>
 
@@ -9985,7 +9981,7 @@ disabled={!can('materials_create')}
         </Field>
 
 
-        <Field label="Quantitat">
+        <Field label="Cantidad">
           <input
 disabled={!can('materials_create') || Boolean(modal.id)}
             type="number"
@@ -10005,7 +10001,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
         {modal.id&&
           <p className="muted">
-            La quantitat només es modifica mitjançant moviments.
+            La cantidad solo se modifica mediante movimientos.
           </p>
         }
 
@@ -10018,7 +10014,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
          {can('materials_create')&&
@@ -10052,7 +10048,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
       if(!can('materials_delete')){
         notify(
-          'No tens permís per eliminar materials'
+          "No tienes permiso para eliminar materiales"
         )
         return
       }
@@ -10060,7 +10056,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
       if(!selectedMaterial){
         notify(
-          'Selecciona el material que vols eliminar'
+          'Selecciona el material que quieres eliminar'
         )
         return
       }
@@ -10068,7 +10064,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
       if(
         !confirm(
-          `Segur que vols borrar "${selectedMaterial.nom}"?\n\nAquesta acció no es pot desfer.`
+          `¿Seguro que quieres borrar "${selectedMaterial.nom}"?\n\nEsta acción no se puede deshacer.`
         )
       )return
 
@@ -10099,7 +10095,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
         if(linkedMovements?.length){
           notify(
-            'Aquest material té moviments registrats i no es pot eliminar perquè es perdria l’historial.'
+            "Este material tiene movimientos registrados y no se puede eliminar porque se perdería el historial."
           )
           return
         }
@@ -10142,7 +10138,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
         router.refresh()
 
         notify(
-          'Material eliminat'
+          'Material eliminado'
         )
       }
       catch(error){
@@ -10185,7 +10181,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                 (a,b)=>
                   a.nom.localeCompare(
                     b.nom,
-                    'ca',
+                    'es',
                     {sensitivity:'base'}
                   )
               )
@@ -10210,7 +10206,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
 
         <p className="muted">
-          Només es poden eliminar materials sense moviments registrats.
+          Solo se pueden eliminar materiales sin movimientos registrados.
         </p>
 
 
@@ -10223,7 +10219,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
           <button
@@ -10349,7 +10345,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
         baseCommercial(a.nom)
           .localeCompare(
             baseCommercial(b.nom),
-            'ca',
+            'es',
             {sensitivity:'base'}
           )
     )
@@ -10423,7 +10419,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
     async function save(){
 
       if(!(type==='Entrada' ? can('stock_entry') : can('stock_exit'))){
-        notify('No tens permís per registrar aquest moviment')
+        notify("No tienes permiso para registrar este movimiento")
         return
       }
 
@@ -10431,15 +10427,15 @@ disabled={!can('materials_create') || Boolean(modal.id)}
       if(!movementItems.length){
         notify(
           type==='Entrada'
-            ? 'Indica almenys una quantitat'
-            : 'Selecciona almenys un material'
+            ? "Indica al menos una cantidad"
+            : 'Selecciona al menos un material'
         )
         return
       }
 
 
       if(
-        type==='Sortida' &&
+        type==='Salida' &&
         !ctx.comercial_id
       ){
         notify(
@@ -10450,21 +10446,21 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
 
       if(
-        type==='Sortida' &&
+        type==='Salida' &&
         (
           !ctx.partit_id ||
           !ctx.client_id
         )
       ){
         notify(
-          'Aquest comercial no té un partit i un client relacionats'
+          "Este comercial no tiene un partido y un cliente relacionados"
         )
         return
       }
 
 
       const unavailable=
-        type==='Sortida'
+        type==='Salida'
           ? movementItems.filter(
               item=>
                 Number(
@@ -10478,7 +10474,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
       if(unavailable.length){
         notify(
-          'No hi ha prou estoc de: '
+          "No hay suficiente stock de: "
           +
           unavailable.map(
             item=>item.material.nom
@@ -10571,19 +10567,19 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                 tipus:type,
                 unitats:item.units,
                 partit_id:
-                  type==='Sortida'
+                  type==='Salida'
                     ? ctx.partit_id
                     : null,
                 client_id:
-                  type==='Sortida'
+                  type==='Salida'
                     ? ctx.client_id
                     : null,
                 comercial_id:
-                  type==='Sortida'
+                  type==='Salida'
                     ? ctx.comercial_id
                     : null,
                 nota:
-                  type==='Sortida'
+                  type==='Salida'
                     ? note.trim()||null
                     : null,
                 created_by:user.id
@@ -10651,8 +10647,8 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
       notify(
         movementItems.length>1
-          ? 'Moviments guardats'
-          : 'Moviment guardat'
+          ? "Movimientos guardados"
+          : "Movimiento guardado"
       )
     }
 
@@ -10661,7 +10657,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
       <Backdrop wide={false}>
 
         <h2>
-          Moviment d’estoc
+          Movimiento de stock
         </h2>
 
 
@@ -10694,18 +10690,18 @@ disabled={!can('materials_create') || Boolean(modal.id)}
               'btn '
               +
               (
-                type==='Sortida'
+                type==='Salida'
                   ? 'sel'
                   : ''
               )
             }
             onClick={
               ()=>setType(
-                'Sortida'
+                'Salida'
               )
             }
           >
-            Sortida
+            Salida
           </button>
 
         </div>
@@ -10713,7 +10709,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
 
         {type==='Entrada'
           ? <Field
-              label="Quantitats d’entrada"
+              label="Cantidades de entrada"
               full
             >
 
@@ -10789,7 +10785,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
           : <>
 
               <Field
-                label="Materials · màxim 1 unitat de cada"
+                label="Materiales · máximo 1 unidad de cada uno"
                 full
               >
 
@@ -10884,7 +10880,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                 </Field>
 
 
-                <Field label="Partit">
+                <Field label="Partido">
                   <input
                     disabled
                     aria-readonly="true"
@@ -10896,7 +10892,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                                   selectedMovementMatch.data
                                 )
                               : '',
-                            'Club Mediterrània · '
+                            "Club Mediterráneo · "
                             +
                             selectedMovementMatch.rival
                           ]
@@ -10906,14 +10902,14 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                     }
                     placeholder={
                       ctx.comercial_id
-                        ? 'Sense partit assignat'
+                        ? "Sin partido asignado"
                         : 'Selecciona un comercial'
                     }
                   />
                 </Field>
 
 
-                <Field label="Client">
+                <Field label="Cliente">
                   <input
                     disabled
                     aria-readonly="true"
@@ -10922,7 +10918,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                     }
                     placeholder={
                       ctx.comercial_id
-                        ? 'Sense client assignat'
+                        ? "Sin cliente asignado"
                         : 'Selecciona un comercial'
                     }
                   />
@@ -10936,7 +10932,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
                   <textarea
                     disabled={!(type==='Entrada' ? can('stock_entry') : can('stock_exit'))}
                     value={note}
-                    placeholder="Motiu o observacions de la sortida"
+                    placeholder="Motivo u observaciones de la salida"
                     onChange={
                       event=>setNote(
                         event.target.value
@@ -10959,7 +10955,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
           {(type==='Entrada' ? can('stock_entry') : can('stock_exit'))&&
@@ -10967,7 +10963,7 @@ disabled={!can('materials_create') || Boolean(modal.id)}
               className="btn primary"
               onClick={save}
             >
-              Guardar moviment
+              Guardar movimiento
             </button>
           }
 
@@ -11000,7 +10996,7 @@ if(!(can('templates_create') || can('templates_edit'))){
             t
           )
         : [
-            'Pendent',
+            "Pendiente",
             'Fet'
           ]
 
@@ -11020,12 +11016,12 @@ if(!(can('templates_create') || can('templates_edit'))){
             }
           : {
               nom:'',
-              grup:'Dades',
+              grup:"Datos",
               dies_offset:0,
-              estat_correcte:'Omplert',
+              estat_correcte:'Completado',
               estats:[
-                'No omplert',
-                'Omplert'
+                'No completado',
+                'Completado'
               ],
               tipus:'estat',
               camp_client:'',
@@ -11040,14 +11036,14 @@ if(!(can('templates_create') || can('templates_edit'))){
 
   if(!(modal.id ? can('templates_edit') : can('templates_create'))){
     notify(
-      'No tens permís per modificar la plantilla de tasques'
+      "No tienes permiso para modificar la plantilla de tareas"
     )
     return
   }
 
   if(!f.nom.trim()){
         notify(
-          'Indica el nom de la tasca'
+          "Indica el nom de la tarea"
         )
         return
       }
@@ -11074,7 +11070,7 @@ if(!(can('templates_create') || can('templates_edit'))){
 
         if(!correctState){
           notify(
-            'Indica l’estat correcte'
+            "Indica el estado correcto"
           )
           return
         }
@@ -11085,7 +11081,7 @@ if(!(can('templates_create') || can('templates_edit'))){
 
         if(selectableStates.length<2){
           notify(
-            'Afegeix almenys dos estats seleccionables'
+            'Añade al menos dos estados seleccionables'
           )
           return
         }
@@ -11346,15 +11342,15 @@ if(!(can('templates_create') || can('templates_edit'))){
 
         <h2>
           {modal.id
-            ? 'Editar tasca'
-            : 'Nova tasca'
+            ? "Editar tarea"
+            : "Nueva tarea"
           }
         </h2>
 
 
         <div className="formgrid">
 
-          <Field label="Nom">
+          <Field label="Nombre">
             <input
               value={f.nom}
               onChange={
@@ -11368,7 +11364,7 @@ if(!(can('templates_create') || can('templates_edit'))){
           </Field>
 
 
-          <Field label="Dies abans/després">
+          <Field label="Días antes/después">
             <input
               type="number"
               value={f.dies_offset}
@@ -11383,7 +11379,7 @@ if(!(can('templates_create') || can('templates_edit'))){
           </Field>
 
 
-          <Field label="Estat correcte">
+          <Field label="Estado correcto">
             <input
               value={
                 f.estat_correcte
@@ -11401,7 +11397,7 @@ if(!(can('templates_create') || can('templates_edit'))){
 
           {f.tipus==='estat'&&
             <Field
-              label="Estats seleccionables"
+              label="Estados seleccionables"
               full
             >
 
@@ -11424,8 +11420,8 @@ if(!(can('templates_create') || can('templates_edit'))){
                     >
 
                       <input
-                        aria-label={`Estat ${index+1}`}
-                        placeholder={`Estat ${index+1}`}
+                        aria-label={`Estado ${index+1}`}
+                        placeholder={`Estado ${index+1}`}
                         value={state}
                         onChange={e=>
                           setF({
@@ -11444,17 +11440,17 @@ if(!(can('templates_create') || can('templates_edit'))){
                         type="button"
                         className="btn"
                         disabled={f.estats.length<=1}
-                        title="Eliminar estat"
+                        title="Eliminar estado"
                         onClick={()=>{
 
                           const stateLabel=
                             String(state||'').trim()
                             ||
-                            `Estat ${index+1}`
+                            `Estado ${index+1}`
 
                           if(
                             !confirm(
-                              `Segur que vols eliminar l’estat "${stateLabel}"?`
+                              `¿Seguro que quieres eliminar el estado "${stateLabel}"?`
                             )
                           )return
 
@@ -11486,11 +11482,11 @@ if(!(can('templates_create') || can('templates_edit'))){
                     })
                   }
                 >
-                  + Afegir estat
+                  + Añadir estado
                 </button>
 
                 <div className="muted">
-                  L’estat correcte ha de coincidir amb un dels estats seleccionables.
+                  El estado correcto debe coincidir con uno de los estados seleccionables.
                 </div>
 
               </div>
@@ -11499,7 +11495,7 @@ if(!(can('templates_create') || can('templates_edit'))){
           }
 
 
-          <Field label="Grup">
+          <Field label="Grupo">
             <select
               value={f.grup}
               onChange={
@@ -11522,7 +11518,7 @@ if(!(can('templates_create') || can('templates_edit'))){
           </Field>
 
 
-          <Field label="Tipus">
+          <Field label="Tipo">
             <select
               value={f.tipus}
               onChange={
@@ -11534,15 +11530,15 @@ if(!(can('templates_create') || can('templates_edit'))){
               }
             >
               <option value="estat">
-                Estat manual
+                Estado manual
               </option>
 
               <option value="camp_client">
-                Camp client
+                Campo cliente
               </option>
 
               <option value="camp_comercial">
-                Camp comercial
+                Campo comercial
               </option>
 
               <option value="talla">
@@ -11552,7 +11548,7 @@ if(!(can('templates_create') || can('templates_edit'))){
           </Field>
 
 
-          <Field label="Ordre">
+          <Field label="Orden">
             <input
               type="number"
               value={f.ordre}
@@ -11579,7 +11575,7 @@ if(!(can('templates_create') || can('templates_edit'))){
               }
             >
               <option value="">
-                Sense assignar
+                Sin asignar
               </option>
 
               {taskResponsibles.map(
@@ -11596,7 +11592,7 @@ if(!(can('templates_create') || can('templates_edit'))){
 
 
           {f.tipus==='camp_client'&&
-            <Field label="Camp client">
+            <Field label="Campo cliente">
               <input
                 value={f.camp_client||''}
                 onChange={
@@ -11612,7 +11608,7 @@ if(!(can('templates_create') || can('templates_edit'))){
 
 
           {f.tipus==='camp_comercial'&&
-            <Field label="Camp comercial">
+            <Field label="Campo comercial">
               <input
                 value={f.camp_comercial||''}
                 onChange={
@@ -11637,7 +11633,7 @@ if(!(can('templates_create') || can('templates_edit'))){
               ()=>setModal(null)
             }
           >
-            Cancel·lar
+            Cancelar
           </button>
 
           <button

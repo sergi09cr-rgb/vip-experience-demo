@@ -39,13 +39,13 @@ export default async function Page(){
     >
       <div className="pageHead">
         <div>
-          <h1>Tasques per rol</h1>
+          <h1>Tareas por rol</h1>
           <p className="muted">
-            Permisos actuals de cada rol de l’aplicació.
+            Permisos actuales de cada rol de la aplicación.
           </p>
         </div>
         <Link className="btn" href={backHref}>
-          ← {backHref.endsWith('/usuaris') ? 'Gestió d’usuaris' : 'Configuració'}
+          ← {backHref.endsWith('/usuaris') ? "Gestión de usuarios" : "Configuración"}
         </Link>
       </div>
 

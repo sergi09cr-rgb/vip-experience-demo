@@ -58,7 +58,7 @@ function safeSheet(rows){
 
     return XLSX.utils.json_to_sheet([
       {
-        informació:'Sense registres'
+        informació:"Sin registros"
       }
     ])
 
@@ -106,7 +106,7 @@ export async function GET(){
 
       return NextResponse.json(
         {
-          error:'No autoritzat'
+          error:'No autorizado'
         },
         {
           status:401
@@ -123,7 +123,7 @@ export async function GET(){
       await supabase
         .from('profiles')
         .select(
-          'id,email,nom,rol,actiu'
+          "id,email,nom,rol,activo"
         )
         .eq(
           'id',
@@ -149,7 +149,7 @@ export async function GET(){
       return NextResponse.json(
         {
           error:
-            'Cal un compte actiu per descarregar còpies de seguretat.'
+            "Se necesita una cuenta activa para descargar copias de seguridad."
         },
         {
           status:403
@@ -165,7 +165,7 @@ export async function GET(){
 
     if(canDownload!==true){
       return NextResponse.json(
-        {error:'No tens permís per descarregar la còpia Excel.'},
+        {error:"No tienes permiso para descarregar la copia Excel."},
         {status:403}
       )
     }
@@ -264,7 +264,7 @@ export async function GET(){
     const resum = [
 
       {
-        camp:'Data còpia',
+        camp:"Fecha de copia",
         valor:
           now.toLocaleString(
             'ca-ES'
@@ -272,7 +272,7 @@ export async function GET(){
       },
 
       {
-        camp:'Usuari',
+        camp:"Usuario",
         valor:
           profile.nom ||
           profile.email ||
@@ -280,14 +280,14 @@ export async function GET(){
       },
 
       {
-        camp:'Correu',
+        camp:"Correo",
         valor:
           profile.email ||
           user.email
       },
 
       {
-        camp:'Partits',
+        camp:"Partidos",
         valor:
           partits.length
       },
@@ -299,37 +299,37 @@ export async function GET(){
       },
 
       {
-        camp:'Clients',
+        camp:"Clientes",
         valor:
           clients.length
       },
 
       {
-        camp:'Comercials',
+        camp:"Comerciales",
         valor:
           comercials.length
       },
 
       {
-        camp:'Tasques',
+        camp:"Tareas",
         valor:
           tasks.length
       },
 
       {
-        camp:'Plantilla tasques',
+        camp:"Plantilla tareas",
         valor:
           templates.length
       },
 
       {
-        camp:'Materials',
+        camp:"Materiales",
         valor:
           materials.length
       },
 
       {
-        camp:'Moviments stock',
+        camp:"Movimientos stock",
         valor:
           movements.length
       },
@@ -341,7 +341,7 @@ export async function GET(){
       },
 
       {
-        camp:'Usuaris',
+        camp:"Usuarios",
         valor:
           profiles.length
       }
@@ -357,7 +357,7 @@ export async function GET(){
 
     addSheet(
       workbook,
-      'Partits',
+      "Partidos",
       partits
     )
 
@@ -369,25 +369,25 @@ export async function GET(){
 
     addSheet(
       workbook,
-      'Clients',
+      "Clientes",
       clients
     )
 
     addSheet(
       workbook,
-      'Comercials',
+      "Comerciales",
       comercials
     )
 
     addSheet(
       workbook,
-      'Tasques',
+      "Tareas",
       tasks
     )
 
     addSheet(
       workbook,
-      'Plantilla tasques',
+      "Plantilla tareas",
       templates
     )
 
@@ -399,7 +399,7 @@ export async function GET(){
 
     addSheet(
       workbook,
-      'Moviments stock',
+      "Movimientos stock",
       movements
     )
 
@@ -411,7 +411,7 @@ export async function GET(){
 
     addSheet(
       workbook,
-      'Usuaris',
+      "Usuarios",
       profiles
     )
 
@@ -449,7 +449,7 @@ export async function GET(){
     if(backupLogError){
 
       throw new Error(
-        `No s'ha pogut registrar la còpia: ${backupLogError.message}`
+        `No se ha podido registrar la copia: ${backupLogError.message}`
       )
 
     }
@@ -487,7 +487,7 @@ export async function GET(){
       {
         error:
           error?.message ||
-          'Error generant la còpia de seguretat'
+          "Error generant la copia de seguretat"
       },
       {
         status:500

@@ -71,7 +71,7 @@ export async function middleware(request){
   }
 
   if(user && path==='/login'){
-    return redirectTo('/dashboard')
+    return redirectTo('/introduccion')
   }
 
   return response

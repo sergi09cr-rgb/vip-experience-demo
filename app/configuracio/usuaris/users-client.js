@@ -50,7 +50,7 @@ export default function UsersClient({
   const canManage=Boolean(permissions.users_view)
   const creatableRoles=[
     ['lector','Lector','users_create_lector'],
-    ['usuari','Usuari','users_create_user'],
+    ['usuari',"Usuario",'users_create_user'],
     ['admin','Admin','users_create_admin'],
     ['superadmin','Superadmin','users_create_superadmin']
   ].filter(([, ,permission])=>permissions[permission])
@@ -84,7 +84,7 @@ export default function UsersClient({
 
       if(!response.ok){
         throw new Error(
-          json.error||'No s’ha pogut carregar la llista.'
+          json.error||"No se ha podido cargar la lista."
         )
       }
 
@@ -102,7 +102,7 @@ export default function UsersClient({
       setMsg(
         failureMessage ||
         e.message ||
-        'No s’ha pogut carregar la llista.'
+        "No se ha podido cargar la lista."
       )
 
       return false
@@ -193,7 +193,7 @@ export default function UsersClient({
       catch{
 
         setMsg(
-          'No s’ha pogut confirmar el resultat. Prem Actualitzar i comprova si l’usuari ja existeix abans de tornar a enviar la invitació.'
+          "No se ha podido confirmar el resultado. Pulsa Actualizar y comprueba si el usuario ya existe antes de volver a enviar la invitación."
         )
 
         return
@@ -201,7 +201,7 @@ export default function UsersClient({
 
       if(!response.ok){
         setMsg(
-          json.error||'No s’ha pogut crear l’usuari.'
+          json.error||"No se ha podido crear el usuario."
         )
         return
       }
@@ -213,11 +213,11 @@ export default function UsersClient({
       })
 
       setMsg(
-        'Usuari creat. Invitació tramitada; comprova la safata d’entrada i el correu brossa.'
+        "Usuario creado. Invitación tramitada; comprueba la bandeja de entrada y el correo no deseado."
       )
 
       await load(
-        'Usuari creat i invitació tramitada, però no s’ha pogut actualitzar la llista. Prem Actualitzar.'
+        "Usuario creado e invitación tramitada, pero no se ha podido actualizar la lista. Pulsa Actualizar."
       )
 
     }
@@ -265,7 +265,7 @@ export default function UsersClient({
       catch{
 
         setMsg(
-          'No s’ha pogut confirmar el canvi. Prem Actualitzar per comprovar l’estat de l’usuari.'
+          "No se ha podido confirmar el cambio. Pulsa Actualizar para comprobar el estado del usuario."
         )
 
         return
@@ -273,15 +273,15 @@ export default function UsersClient({
 
       if(!response.ok){
         setMsg(
-          json.error||'No s’ha pogut actualitzar l’usuari.'
+          json.error||"No se ha podido actualizar el usuario."
         )
         return
       }
 
-      setMsg('Usuari actualitzat correctament.')
+      setMsg("Usuario actualizado correctamente.")
 
       await load(
-        'El canvi s’ha desat, però no s’ha pogut actualitzar la llista. Prem Actualitzar.'
+        "El cambio se ha guardado, pero no se ha podido actualizar la lista. Pulsa Actualizar."
       )
 
     }
@@ -302,11 +302,11 @@ export default function UsersClient({
     )return
 
     const accepted=window.confirm(
-      `Segur que vols eliminar definitivament l’usuari ${user.email}?\n\n`+
-      'S’eliminaran el compte i el perfil. '+
-      'L’historial i els moviments es conservaran, '+
-      'però la referència a aquest autor quedarà buida.\n\n'+
-      'Aquesta acció no es pot desfer.'
+      `¿Seguro que quieres eliminar definitivamente al usuario ${user.email}?\n\n`+
+      "Se eliminarán la cuenta y el perfil. "+
+      "El historial y los movimientos se conservarán, "+
+      "pero la referencia a este autor quedará vacía.\n\n"+
+      "Esta acción no se puede deshacer."
     )
 
     if(!accepted)return
@@ -338,7 +338,7 @@ export default function UsersClient({
       catch{
 
         setMsg(
-          'No s’ha pogut confirmar l’eliminació. Prem Actualitzar abans de tornar-ho a provar.'
+          "No se ha podido confirmar la eliminación. Pulsa Actualizar antes de volver a intentarlo."
         )
 
         return
@@ -346,7 +346,7 @@ export default function UsersClient({
 
       if(!response.ok){
         setMsg(
-          json.error||'No s’ha pogut eliminar l’usuari.'
+          json.error||"No se ha podido eliminar el usuario."
         )
         return
       }
@@ -356,7 +356,7 @@ export default function UsersClient({
       )
 
       setMsg(
-        json.warning||'Usuari eliminat correctament.'
+        json.warning||"Usuario eliminado correctamente."
       )
 
     }
@@ -372,10 +372,10 @@ export default function UsersClient({
     <>
       <div className="pageHead">
         <div>
-          <h1>Usuaris</h1>
+          <h1>Usuarios</h1>
 
           <p className="muted">
-            Accés a VIP Experience Demo i permisos.
+            Acceso a VIP Experience Demo y permisos.
           </p>
         </div>
 
@@ -385,7 +385,7 @@ export default function UsersClient({
           disabled={busy}
           onClick={()=>router.push('/configuracio')}
         >
-          ← Configuració
+          ← Configuración
         </button>
       </div>
 
@@ -397,7 +397,7 @@ export default function UsersClient({
 
       <div className={canManage ? 'grid2 userGrid' : 'userPermissionsOnly'}>
         {canManage && <section className="panel userCreateCard">
-          <h2>Nou usuari</h2>
+          <h2>Nuevo usuario</h2>
 
           <form
             onSubmit={createUser}
@@ -405,7 +405,7 @@ export default function UsersClient({
             aria-busy={creating}
           >
             <label className="field">
-              <span>Nom</span>
+              <span>Nombre</span>
 
               <input
                 value={form.nom}
@@ -420,7 +420,7 @@ export default function UsersClient({
             </label>
 
             <label className="field">
-              <span>Correu *</span>
+              <span>Correo *</span>
 
               <input
                 type="email"
@@ -465,8 +465,8 @@ export default function UsersClient({
                 aria-busy={creating}
               >
                 {creating
-                  ? 'Creant i enviant invitació...'
-                  : 'Crear usuari i enviar invitació'
+                  ? "Creando y enviando invitación..."
+                  : "Crear usuario y enviar invitación"
                 }
               </button>
             </div>
@@ -477,10 +477,10 @@ export default function UsersClient({
           <h2>Permisos</h2>
 
           <div className="userRoleSummaries">
-            <p><b>Superadmin</b><span>Accés complet i gestió de permisos.</span></p>
-            <p><b>Admin</b><span>Gestió d’usuaris, configuració i edició.</span></p>
-            <p><b>Usuari</b><span>Operativa habitual de calendari, clients, tasques i estoc.</span></p>
-            <p><b>Lector</b><span>Consulta i descàrrega de dades.</span></p>
+            <p><b>Superadmin</b><span>Acceso completo y gestión de permisos.</span></p>
+            <p><b>Admin</b><span>Gestión de usuarios, configuración y edición.</span></p>
+            <p><b>Usuario</b><span>Operativa habitual de calendario, clientes, tareas y existencias.</span></p>
+            <p><b>Lector</b><span>Consulta y descarga de datos.</span></p>
           </div>
 
           <button
@@ -492,14 +492,14 @@ export default function UsersClient({
               )
             }
           >
-            Veure tasques per rol
+            Ver tareas por rol
           </button>
         </section>
       </div>
 
       {canManage && <section className="panel">
         <div className="panelHead">
-          <h2>Usuaris actuals</h2>
+          <h2>Usuarios actuales</h2>
 
           <button
             type="button"
@@ -507,25 +507,25 @@ export default function UsersClient({
             disabled={busy}
             onClick={()=>load()}
           >
-            {loading ? 'Carregant...' : 'Actualitzar'}
+            {loading ? "Cargando..." : "Actualizar"}
           </button>
         </div>
 
         {loading ? (
           <div className="empty" role="status">
-            Carregant...
+            Cargando...
           </div>
         ) : (
           <div className="tablewrap">
             <table>
               <thead>
                 <tr>
-                  <th>Usuari</th>
+                  <th>Usuario</th>
                   <th>Rol</th>
-                  <th>Estat</th>
-                  <th>Creat</th>
-                  <th>Últim accés</th>
-                  <th>Accions</th>
+                  <th>Estado</th>
+                  <th>Creado</th>
+                  <th>Último acceso</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
 
@@ -560,7 +560,7 @@ export default function UsersClient({
                         </option>
 
                         <option value="usuari">
-                          Usuari
+                          Usuario
                         </option>
 
                         <option value="admin">
@@ -584,7 +584,7 @@ export default function UsersClient({
                           `tag ${user.actiu ? 'green' : 'dark'}`
                         }
                       >
-                        {user.actiu ? 'Actiu' : 'Inactiu'}
+                        {user.actiu ? "Activo" : "Inactivo"}
                       </span>
                     </td>
 
@@ -618,7 +618,7 @@ export default function UsersClient({
                             }
                           >
                             {updatingId===user.id
-                              ? 'Desant...'
+                              ? 'Guardando...'
                               : user.actiu
                                 ? 'Desactivar'
                                 : 'Reactivar'
@@ -632,7 +632,7 @@ export default function UsersClient({
                             onClick={()=>deleteUser(user)}
                           >
                             {deletingId===user.id
-                              ? 'Eliminant...'
+                              ? 'Eliminando...'
                               : 'Eliminar'
                             }
                           </button>}
@@ -645,7 +645,7 @@ export default function UsersClient({
                 {users.length===0 && (
                   <tr>
                     <td colSpan={6}>
-                      No hi ha usuaris per mostrar.
+                      No hay usuarios por mostrar.
                     </td>
                   </tr>
                 )}
