@@ -292,6 +292,7 @@ export default function DemoTutorial({userKey='current'}){
   const [sectionRect,setSectionRect]=useState(null)
   const [portalReady,setPortalReady]=useState(false)
   const [movingToIndex,setMovingToIndex]=useState(null)
+  const [routeTransitioning,setRouteTransitioning]=useState(false)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
@@ -305,27 +306,12 @@ export default function DemoTutorial({userKey='current'}){
   },[])
 
   useEffect(()=>{
-    if(!step)return
-    const nearbyPaths=[
-      steps[stepIndex-1]?.path,
-      steps[stepIndex+1]?.path
-    ]
-    for(const nearbyPath of nearbyPaths){
-      if(nearbyPath && nearbyPath!==pathname){
-        router.prefetch(nearbyPath)
-      }
+    if(!mode)return
+    const tutorialPaths=[...new Set(steps.map(item=>item.path).filter(Boolean))]
+    for(const tutorialPath of tutorialPaths){
+      router.prefetch(tutorialPath)
     }
-  },[pathname,router,step,stepIndex,steps])
-
-  useEffect(()=>{
-    if(
-      movingToIndex===null ||
-      movingToIndex!==stepIndex ||
-      step?.path!==pathname
-    )return
-    const timer=window.setTimeout(()=>setMovingToIndex(null),40)
-    return ()=>window.clearTimeout(timer)
-  },[movingToIndex,pathname,stepIndex,step?.path])
+  },[mode,router,steps])
 
   useEffect(()=>{
     try{
@@ -338,13 +324,18 @@ export default function DemoTutorial({userKey='current'}){
         Number.isInteger(saved.stepIndex)
       ){
         const savedSteps=saved.mode==='full' ? FULL_STEPS : QUICK_STEPS
+        const savedIndex=clamp(saved.stepIndex,0,savedSteps.length-1)
         setMode(saved.mode)
-        setStepIndex(clamp(saved.stepIndex,0,savedSteps.length-1))
+        setStepIndex(savedIndex)
+        if(savedSteps[savedIndex]?.path!==pathname){
+          setMovingToIndex(savedIndex)
+          setRouteTransitioning(true)
+        }
       }
     }catch{
       window.sessionStorage.removeItem(progressKey)
     }
-  },[progressKey])
+  },[pathname,progressKey])
 
   useEffect(()=>{
     function handleTutorialStart(event){
@@ -354,6 +345,11 @@ export default function DemoTutorial({userKey='current'}){
       setMode(nextMode)
       setStepIndex(0)
       setTargetRect(null)
+      setSectionRect(null)
+      if((nextMode==='full' ? FULL_STEPS : QUICK_STEPS)[0]?.path!==pathname){
+        setMovingToIndex(0)
+        setRouteTransitioning(true)
+      }
       window.localStorage.setItem(storageKey,'started')
       window.sessionStorage.setItem(
         progressKey,
@@ -366,7 +362,7 @@ export default function DemoTutorial({userKey='current'}){
       'vip-demo-tutorial-start',
       handleTutorialStart
     )
-  },[progressKey,storageKey])
+  },[pathname,progressKey,storageKey])
 
   const measureTarget=useCallback(()=>{
     const sectionKey=sectionKeyFromPath(pathname)
@@ -405,6 +401,13 @@ export default function DemoTutorial({userKey='current'}){
 
   useEffect(()=>{
     if(!step)return
+    if(movingToIndex!==null && movingToIndex!==stepIndex){
+      const pendingStep=steps[movingToIndex]
+      if(pendingStep?.path===pathname){
+        setStepIndex(movingToIndex)
+      }
+      return
+    }
     if(step.path && pathname!==step.path){
       window.sessionStorage.setItem(
         progressKey,
@@ -418,9 +421,18 @@ export default function DemoTutorial({userKey='current'}){
     let retryTimer=null
     let settleTimer=null
 
+    const finishReveal=()=>{
+      measureTarget()
+      if(movingToIndex===stepIndex){
+        setRouteTransitioning(false)
+        window.requestAnimationFrame(()=>setMovingToIndex(null))
+      }
+    }
+
     const revealTarget=()=>{
       if(!step.selector){
         setTargetRect(null)
+        finishReveal()
         return
       }
 
@@ -435,12 +447,24 @@ export default function DemoTutorial({userKey='current'}){
         return
       }
 
-      node.scrollIntoView({
-        block:'center',
-        inline:'nearest',
-        behavior:'smooth'
-      })
-      settleTimer=window.setTimeout(measureTarget,520)
+      const rect=node.getBoundingClientRect()
+      const alreadyVisible=
+        rect.top>=18 &&
+        rect.left>=18 &&
+        rect.bottom<=window.innerHeight-18 &&
+        rect.right<=window.innerWidth-18
+
+      if(!alreadyVisible){
+        node.scrollIntoView({
+          block:'center',
+          inline:'nearest',
+          behavior:'smooth'
+        })
+      }
+      settleTimer=window.setTimeout(
+        finishReveal,
+        alreadyVisible ? 70 : 380
+      )
     }
 
     let frame=null
@@ -463,6 +487,7 @@ export default function DemoTutorial({userKey='current'}){
   },[
     measureTarget,
     mode,
+    movingToIndex,
     pathname,
     progressKey,
     router,
@@ -471,9 +496,16 @@ export default function DemoTutorial({userKey='current'}){
   ])
 
   function start(nextMode){
+    const nextSteps=nextMode==='full' ? FULL_STEPS : QUICK_STEPS
     setChooserOpen(false)
     setMode(nextMode)
     setStepIndex(0)
+    setTargetRect(null)
+    setSectionRect(null)
+    if(nextSteps[0]?.path!==pathname){
+      setMovingToIndex(0)
+      setRouteTransitioning(true)
+    }
     window.localStorage.setItem(storageKey,'started')
     window.sessionStorage.setItem(
       progressKey,
@@ -487,6 +519,7 @@ export default function DemoTutorial({userKey='current'}){
     setTargetRect(null)
     setSectionRect(null)
     setMovingToIndex(null)
+    setRouteTransitioning(false)
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
     if(result==='completed'){
@@ -506,12 +539,25 @@ export default function DemoTutorial({userKey='current'}){
       return
     }
     const bounded=Math.max(0,next)
+    const pendingStep=steps[bounded]
+    const changesRoute=Boolean(
+      pendingStep?.path && pendingStep.path!==pathname
+    )
     window.sessionStorage.setItem(
       progressKey,
       JSON.stringify({mode,stepIndex:bounded})
     )
     setMovingToIndex(bounded)
-    window.setTimeout(()=>setStepIndex(bounded),110)
+    setRouteTransitioning(changesRoute)
+    window.setTimeout(()=>{
+      if(changesRoute){
+        setTargetRect(null)
+        setSectionRect(null)
+        router.push(pendingStep.path,{scroll:false})
+      }else{
+        setStepIndex(bounded)
+      }
+    },140)
   }
 
   return <>
@@ -577,9 +623,12 @@ export default function DemoTutorial({userKey='current'}){
             {SECTION_META[sectionKeyFromPath(pathname)]?.label}
           </div>
         )}
+        <div
+          className={`tutorialTransitionVeil${routeTransitioning ? ' visible' : ''}`}
+          aria-hidden="true"
+        />
         {!targetRect&&<div className="tutorialDimmer"/>}
         <section
-          key={`${mode}:${stepIndex}:${pathname}`}
           className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
           role="dialog"
           aria-modal="true"
@@ -614,11 +663,7 @@ export default function DemoTutorial({userKey='current'}){
                 disabled={isMoving}
                 onClick={()=>move(1)}
               >
-                {isMoving
-                  ? 'Cambiando…'
-                  : stepIndex===steps.length-1
-                    ? 'Finalizar'
-                    : 'Siguiente'}
+                {stepIndex===steps.length-1 ? 'Finalizar' : 'Siguiente'}
               </button>
             </div>
           </div>
