@@ -62,7 +62,7 @@ async function requireApiAdmin(permission=null){
     error
   }=await supabase
     .from('profiles')
-    .select("id,workspace_id,rol,activo")
+    .select("id,workspace_id,rol,actiu")
     .eq('id',user.id)
     .maybeSingle()
 
@@ -149,7 +149,7 @@ export async function GET(){
       admin
         .from('profiles')
         .select(
-          "id,workspace_id,email,nom,rol,activo,created_at"
+          "id,workspace_id,email,nom,rol,actiu,created_at"
         )
         .eq('workspace_id',auth.profile.workspace_id),
       admin
@@ -754,7 +754,7 @@ export async function DELETE(request){
     const {data:before,error:profileError}=
       await admin
         .from('profiles')
-        .select("id,email,nom,rol,activo")
+        .select("id,email,nom,rol,actiu")
         .eq('id',id)
         .eq('workspace_id',auth.profile.workspace_id)
         .maybeSingle()

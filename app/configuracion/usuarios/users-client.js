@@ -584,7 +584,7 @@ export default function UsersClient({
                           `tag ${user.actiu ? 'green' : 'dark'}`
                         }
                       >
-                        {user.actiu ? "Activo" : "Inactivo"}
+                        {user.actiu ? "Activo" : "Inactiu"}
                       </span>
                     </td>
 

@@ -1217,14 +1217,14 @@ const can=
             comercials:()=>supabase
                 .from('comercials')
                 .select(
-                  "id,nom,dni,telefon,correu,data_naixement,talla,nom_samarreta,activo,created_at"
+                  "id,nom,dni,telefon,correu,data_naixement,talla,nom_samarreta,actiu,created_at"
                 )
                 .eq('actiu',true)
                 .order('nom'),
             clients:()=>supabase
                 .from('clients')
                 .select(
-                  "id,empresa,nom_client,comercial_id,telefon,correu,dni,nacionalitat,data_naixement,talla,nom_samarreta,notes,activo,created_at"
+                  "id,empresa,nom_client,comercial_id,telefon,correu,dni,nacionalitat,data_naixement,talla,nom_samarreta,notes,actiu,created_at"
                 )
                 .eq('actiu',true)
                 .order('empresa'),
@@ -1251,7 +1251,7 @@ const can=
             materials:()=>supabase
                 .from('materials')
                 .select(
-                  "id,nom,cantidad,activo,created_at"
+                  "id,nom,quantitat,actiu,created_at"
                 )
                 .eq('actiu',true)
                 .order('nom'),

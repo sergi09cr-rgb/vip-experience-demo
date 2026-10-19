@@ -123,7 +123,7 @@ export async function GET(){
       await supabase
         .from('profiles')
         .select(
-          "id,email,nom,rol,activo"
+          "id,email,nom,rol,actiu"
         )
         .eq(
           'id',

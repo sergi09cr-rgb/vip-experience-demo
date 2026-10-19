@@ -433,7 +433,7 @@ export default function HistoryClient({
       supabase
         .from('profiles')
         .select(
-          "id,email,nom,rol,activo"
+          "id,email,nom,rol,actiu"
         ),
 
       supabase
