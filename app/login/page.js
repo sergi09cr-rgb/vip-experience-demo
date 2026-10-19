@@ -313,7 +313,7 @@ export default function LoginPage(){
             <label>
 
               <span>
-                Contrasenya
+                Contraseña
               </span>
 
               <div className="loginInputWrap">
@@ -398,7 +398,7 @@ export default function LoginPage(){
             </span>
 
             <p>
-              Acceso restringit a
+              Acceso restringido a
               cada entorno privado.
             </p>
 

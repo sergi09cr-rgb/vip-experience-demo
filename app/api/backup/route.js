@@ -165,7 +165,7 @@ export async function GET(){
 
     if(canDownload!==true){
       return NextResponse.json(
-        {error:"No tienes permiso para descarregar la copia Excel."},
+        {error:"No tienes permiso para descargar la copia Excel."},
         {status:403}
       )
     }
@@ -487,7 +487,7 @@ export async function GET(){
       {
         error:
           error?.message ||
-          "Error generant la copia de seguretat"
+          "Error al generar la copia de seguridad"
       },
       {
         status:500
