@@ -194,7 +194,7 @@ export default function Shell({
 
         <div className="sideBottom">
 
-          <DemoTutorial userKey={userEmail||'current'}/>
+          <DemoTutorial userKey="current-demo-session"/>
 
           {role==='superadmin' && (
             <button

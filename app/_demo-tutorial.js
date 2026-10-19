@@ -344,7 +344,7 @@ export default function DemoTutorial({userKey='current'}){
         inline:'nearest',
         behavior:'smooth'
       })
-      settleTimer=window.setTimeout(measureTarget,360)
+      settleTimer=window.setTimeout(measureTarget,520)
     }
 
     let frame=null
