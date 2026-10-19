@@ -293,10 +293,7 @@ export default function DemoTutorial({userKey='current'}){
   const [portalReady,setPortalReady]=useState(false)
   const [movingToIndex,setMovingToIndex]=useState(null)
   const [routeTransitioning,setRouteTransitioning]=useState(false)
-  const [nativePageTransition,setNativePageTransition]=useState(false)
-  const [pageSnapshot,setPageSnapshot]=useState(null)
-  const viewTransitionResolveRef=useRef(null)
-  const viewTransitionTimerRef=useRef(null)
+  const [snapshotActive,setSnapshotActive]=useState(false)
   const snapshotTimerRef=useRef(null)
 
   const steps=useMemo(
@@ -308,6 +305,9 @@ export default function DemoTutorial({userKey='current'}){
 
   useEffect(()=>{
     setPortalReady(true)
+    setSnapshotActive(Boolean(
+      document.querySelector('[data-tutorial-page-snapshot]')
+    ))
   },[])
 
   useEffect(()=>{
@@ -330,9 +330,12 @@ export default function DemoTutorial({userKey='current'}){
       ){
         const savedSteps=saved.mode==='full' ? FULL_STEPS : QUICK_STEPS
         const savedIndex=clamp(saved.stepIndex,0,savedSteps.length-1)
+        const snapshotPending=Boolean(
+          document.querySelector('[data-tutorial-page-snapshot]')
+        )
         setMode(saved.mode)
         setStepIndex(savedIndex)
-        if(savedSteps[savedIndex]?.path!==pathname){
+        if(savedSteps[savedIndex]?.path!==pathname||snapshotPending){
           setMovingToIndex(savedIndex)
           setRouteTransitioning(true)
         }
@@ -404,29 +407,24 @@ export default function DemoTutorial({userKey='current'}){
     return true
   },[pathname,step])
 
-  const resolveViewTransition=useCallback(()=>{
-    if(viewTransitionTimerRef.current){
-      window.clearTimeout(viewTransitionTimerRef.current)
-      viewTransitionTimerRef.current=null
-    }
-    const resolve=viewTransitionResolveRef.current
-    viewTransitionResolveRef.current=null
-    resolve?.()
-  },[])
-
   const clearPageSnapshot=useCallback(()=>{
     if(snapshotTimerRef.current){
       window.clearTimeout(snapshotTimerRef.current)
       snapshotTimerRef.current=null
     }
-    setPageSnapshot(null)
+    document
+      .querySelector('[data-tutorial-page-snapshot]')
+      ?.remove()
+    setSnapshotActive(false)
   },[])
 
   const capturePageSnapshot=useCallback(()=>{
-    if(typeof document.startViewTransition==='function')return
-
     const source=document.querySelector('.main')
     if(!source)return
+
+    document
+      .querySelector('[data-tutorial-page-snapshot]')
+      ?.remove()
 
     const rect=source.getBoundingClientRect()
     const clone=source.cloneNode(true)
@@ -457,55 +455,47 @@ export default function DemoTutorial({userKey='current'}){
     clone.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'))
     clone.classList.add('tutorialPageSnapshotContent')
     clone.setAttribute('aria-hidden','true')
+    clone.setAttribute('inert','')
 
-    setPageSnapshot({
-      html:clone.outerHTML,
-      top:rect.top,
-      left:rect.left,
-      width:rect.width,
-      height:rect.height,
-      leaving:false
+    const snapshot=document.createElement('div')
+    snapshot.className='tutorialPageSnapshot'
+    snapshot.dataset.tutorialPageSnapshot='true'
+    snapshot.setAttribute('aria-hidden','true')
+    Object.assign(snapshot.style,{
+      top:`${rect.top}px`,
+      left:`${rect.left}px`,
+      width:`${rect.width}px`,
+      height:`${rect.height}px`
     })
+    snapshot.appendChild(clone)
+    document.body.appendChild(snapshot)
+    setSnapshotActive(true)
   },[])
 
   const releasePageSnapshot=useCallback(()=>{
-    setPageSnapshot(current=>current ? {...current,leaving:true} : null)
+    const snapshot=document.querySelector(
+      '[data-tutorial-page-snapshot]'
+    )
+    if(!snapshot){
+      setSnapshotActive(false)
+      setMovingToIndex(null)
+      return
+    }
+    snapshot.classList.add('leaving')
     if(snapshotTimerRef.current){
       window.clearTimeout(snapshotTimerRef.current)
     }
     snapshotTimerRef.current=window.setTimeout(()=>{
-      setPageSnapshot(null)
+      snapshot.remove()
+      setSnapshotActive(false)
       setMovingToIndex(null)
       snapshotTimerRef.current=null
     },360)
   },[])
 
   const navigateBetweenSections=useCallback((nextPath)=>{
-    if(typeof document.startViewTransition!=='function'){
-      router.push(nextPath,{scroll:false})
-      return
-    }
-
-    setNativePageTransition(true)
-    try{
-      const transition=document.startViewTransition(async()=>{
-        const routeReady=new Promise(resolve=>{
-          viewTransitionResolveRef.current=resolve
-          viewTransitionTimerRef.current=window.setTimeout(
-            resolveViewTransition,
-            3000
-          )
-        })
-        router.push(nextPath,{scroll:false})
-        await routeReady
-      })
-      transition.finished.finally(()=>setNativePageTransition(false))
-    }catch{
-      setNativePageTransition(false)
-      resolveViewTransition()
-      router.push(nextPath,{scroll:false})
-    }
-  },[resolveViewTransition,router])
+    router.push(nextPath,{scroll:false})
+  },[router])
 
   useEffect(()=>{
     if(!step)return
@@ -533,14 +523,11 @@ export default function DemoTutorial({userKey='current'}){
       measureTarget()
       if(movingToIndex===stepIndex){
         setRouteTransitioning(false)
-        if(pageSnapshot&&!pageSnapshot.leaving){
+        if(document.querySelector('[data-tutorial-page-snapshot]')){
           releasePageSnapshot()
-        }else if(!pageSnapshot){
+        }else{
           setMovingToIndex(null)
         }
-        window.requestAnimationFrame(()=>{
-          window.requestAnimationFrame(resolveViewTransition)
-        })
       }
     }
 
@@ -604,10 +591,8 @@ export default function DemoTutorial({userKey='current'}){
     mode,
     movingToIndex,
     pathname,
-    pageSnapshot,
     progressKey,
     releasePageSnapshot,
-    resolveViewTransition,
     router,
     step,
     stepIndex
@@ -638,9 +623,7 @@ export default function DemoTutorial({userKey='current'}){
     setSectionRect(null)
     setMovingToIndex(null)
     setRouteTransitioning(false)
-    setNativePageTransition(false)
     clearPageSnapshot()
-    resolveViewTransition()
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
     if(result==='completed'){
@@ -745,24 +728,11 @@ export default function DemoTutorial({userKey='current'}){
             {SECTION_META[sectionKeyFromPath(pathname)]?.label}
           </div>
         )}
-        {pageSnapshot&&(
-          <div
-            className={`tutorialPageSnapshot${pageSnapshot.leaving ? ' leaving' : ''}`}
-            style={{
-              top:pageSnapshot.top,
-              left:pageSnapshot.left,
-              width:pageSnapshot.width,
-              height:pageSnapshot.height
-            }}
-            aria-hidden="true"
-            dangerouslySetInnerHTML={{__html:pageSnapshot.html}}
-          />
-        )}
         <div
-          className={`tutorialTransitionVeil${routeTransitioning && !nativePageTransition && !pageSnapshot ? ' visible' : ''}`}
+          className={`tutorialTransitionVeil${routeTransitioning && !snapshotActive ? ' visible' : ''}`}
           aria-hidden="true"
         />
-        {!targetRect&&!pageSnapshot&&<div className="tutorialDimmer"/>}
+        {!targetRect&&!snapshotActive&&<div className="tutorialDimmer"/>}
         <section
           className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
           role="dialog"

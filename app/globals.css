@@ -877,7 +877,7 @@ textarea{
 
 .tutorialPageSnapshot{
   position:fixed;
-  z-index:1;
+  z-index:2999;
   overflow:hidden;
   background:#f3f7fc;
   opacity:1;
@@ -910,45 +910,6 @@ textarea{
   min-height:100%;
   animation:none!important;
   view-transition-name:none!important;
-}
-
-.main{
-  view-transition-name:tutorial-main;
-}
-
-::view-transition-old(root),
-::view-transition-new(root){
-  animation-duration:.36s;
-  animation-timing-function:cubic-bezier(.2,.75,.25,1);
-}
-
-::view-transition-old(tutorial-main){
-  animation:tutorialPageOut .3s cubic-bezier(.4,0,1,1) both;
-}
-
-::view-transition-new(tutorial-main){
-  animation:tutorialPageIn .42s cubic-bezier(.2,.75,.25,1) both;
-}
-
-@keyframes tutorialPageOut{
-  to{
-    opacity:0;
-    transform:translateY(-4px) scale(.995);
-    filter:blur(2px);
-  }
-}
-
-@keyframes tutorialPageIn{
-  from{
-    opacity:0;
-    transform:translateY(7px) scale(.995);
-    filter:blur(3px);
-  }
-  to{
-    opacity:1;
-    transform:none;
-    filter:none;
-  }
 }
 
 .tutorialSectionIndicator{
@@ -1131,12 +1092,6 @@ textarea{
     transition:none;
   }
 
-  ::view-transition-old(root),
-  ::view-transition-new(root),
-  ::view-transition-old(tutorial-main),
-  ::view-transition-new(tutorial-main){
-    animation-duration:.01ms;
-  }
 }
 
 .resetDemoButton:hover:not(:disabled){
