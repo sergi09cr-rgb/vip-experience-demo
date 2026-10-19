@@ -1,6 +1,7 @@
 'use client'
 
 import {useCallback,useEffect,useMemo,useState} from 'react'
+import {createPortal} from 'react-dom'
 import {usePathname,useRouter} from 'next/navigation'
 
 const QUICK_STEPS=[
@@ -240,12 +241,17 @@ export default function DemoTutorial({userKey='current'}){
   const [mode,setMode]=useState(null)
   const [stepIndex,setStepIndex]=useState(0)
   const [targetRect,setTargetRect]=useState(null)
+  const [portalReady,setPortalReady]=useState(false)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
     [mode]
   )
   const step=mode ? steps[stepIndex] : null
+
+  useEffect(()=>{
+    setPortalReady(true)
+  },[])
 
   useEffect(()=>{
     try{
@@ -418,6 +424,7 @@ export default function DemoTutorial({userKey='current'}){
       Tutorial
     </button>
 
+    {portalReady&&createPortal(<>
     {chooserOpen&&(
       <div className="tutorialBackdrop" role="presentation">
         <section
@@ -497,5 +504,6 @@ export default function DemoTutorial({userKey='current'}){
         </section>
       </div>
     )}
+    </>,document.body)}
   </>
 }
