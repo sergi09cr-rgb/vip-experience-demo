@@ -148,7 +148,7 @@ const FULL_STEPS=[
   },
   {
     path:'/tareas',
-    selector:'.taskcards',
+    selector:'.taskTable',
     title:'Cambio de estado',
     body:'Actualiza cada tarea con su selector. Las tareas completadas y las fechas límite se recalculan de forma coherente.'
   },
@@ -232,6 +232,38 @@ function clamp(value,min,max){
   return Math.min(Math.max(value,min),max)
 }
 
+function coachmarkPlacement(step){
+  const selector=step?.selector||''
+
+  if(
+    selector==='.matchTasksPreview' ||
+    selector.includes('nth-of-type(2)')
+  ){
+    return 'top-left'
+  }
+
+  if(
+    selector==='.nav' ||
+    selector.includes('nav-') ||
+    selector.includes('intro-flow') ||
+    selector==='.dashboardKpis' ||
+    selector.includes('Toolbar') ||
+    selector==='.toolbar' ||
+    selector==='.tablewrap' ||
+    selector==='.taskTable' ||
+    selector==='.stockMovementsPanel' ||
+    selector==='.historyItem' ||
+    selector==='.permissionsMatrixWrap' ||
+    selector==='.roleViewSwitcher' ||
+    selector==='.resetDemoButton' ||
+    selector.includes('tutorial-button')
+  ){
+    return 'top-right'
+  }
+
+  return 'bottom-right'
+}
+
 export default function DemoTutorial({userKey='current'}){
   const router=useRouter()
   const pathname=usePathname()
@@ -252,6 +284,14 @@ export default function DemoTutorial({userKey='current'}){
   useEffect(()=>{
     setPortalReady(true)
   },[])
+
+  useEffect(()=>{
+    if(!step)return
+    const nextPath=steps[stepIndex+1]?.path
+    if(nextPath && nextPath!==pathname){
+      router.prefetch(nextPath)
+    }
+  },[pathname,router,step,stepIndex,steps])
 
   useEffect(()=>{
     try{
@@ -469,7 +509,7 @@ export default function DemoTutorial({userKey='current'}){
         {!targetRect&&<div className="tutorialDimmer"/>}
         <section
           key={`${mode}:${stepIndex}:${pathname}`}
-          className="tutorialCoachmark"
+          className={`tutorialCoachmark ${coachmarkPlacement(step)}`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="tutorialStepTitle"

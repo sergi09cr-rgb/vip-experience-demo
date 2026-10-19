@@ -859,8 +859,6 @@ textarea{
 
 .tutorialCoachmark{
   position:fixed;
-  right:22px;
-  bottom:22px;
   z-index:3002;
   width:min(380px,calc(100vw - 32px));
   max-height:calc(100vh - 44px);
@@ -876,6 +874,21 @@ textarea{
     opacity .3s ease,
     transform .3s ease;
   animation:tutorialCoachmarkIn .36s ease-out both;
+}
+
+.tutorialCoachmark.bottom-right{
+  right:22px;
+  bottom:22px;
+}
+
+.tutorialCoachmark.top-right{
+  top:22px;
+  right:22px;
+}
+
+.tutorialCoachmark.top-left{
+  top:22px;
+  left:247px;
 }
 
 @keyframes tutorialFadeIn{

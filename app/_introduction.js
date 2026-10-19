@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import {useState} from 'react'
 
 const DEMO_FLOW=[
   {number:'01',title:'Planifica el partido',text:'Organiza el calendario, las dos invitaciones VIP y sus asignaciones.'},
@@ -17,32 +16,16 @@ function startTutorial(mode){
 }
 
 export default function Introduction(){
-  const [collapsed,setCollapsed]=useState(false)
-
-  return <section
-    className={`introduction${collapsed ? ' collapsed' : ''}`}
-  >
+  return <section className="introduction">
     <header className="introductionTopbar">
       <div>
         <span className="introductionKicker">INTRODUCCIÓN</span>
         <h1>VIP Experience Demo</h1>
       </div>
 
-      <button
-        type="button"
-        className="introductionToggle"
-        aria-expanded={!collapsed}
-        aria-controls="introductionContent"
-        onClick={()=>setCollapsed(current=>!current)}
-      >
-        <span>{collapsed ? 'Mostrar introducción' : 'Ocultar introducción'}</span>
-        <span className="introductionToggleArrow" aria-hidden="true">
-          {collapsed ? '⌄' : '⌃'}
-        </span>
-      </button>
     </header>
 
-    {!collapsed&&<div id="introductionContent">
+    <div id="introductionContent">
       <div className="introductionHero" data-tour="intro-overview">
         <div className="introductionCopy">
           <div className="introductionStatus">
@@ -143,6 +126,6 @@ export default function Introduction(){
           {' '}Cada visitante recibe un entorno aislado que puede modificar y restablecer.
         </p>
       </div>
-    </div>}
+    </div>
   </section>
 }
