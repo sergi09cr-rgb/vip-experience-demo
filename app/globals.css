@@ -669,8 +669,9 @@ textarea{
 }
 
 .roleViewSwitcher select{
-  width:92px;
-  min-width:0;
+  width:112px;
+  min-width:112px;
+  flex:0 0 112px;
   padding:5px 6px;
   border:1px solid #4d647a;
   border-radius:6px;
@@ -857,64 +858,9 @@ textarea{
     height .55s cubic-bezier(.2,.75,.25,1);
 }
 
-.tutorialTransitionVeil{
-  position:fixed;
-  inset:0;
-  z-index:3002;
-  background:rgba(3,15,28,.78);
-  opacity:0;
-  backdrop-filter:blur(0);
-  pointer-events:none;
-  transition:
-    opacity .18s ease,
-    backdrop-filter .22s ease;
-}
-
-.tutorialTransitionVeil.visible{
-  opacity:1;
-  backdrop-filter:blur(8px);
-}
-
-.tutorialPageSnapshot{
-  position:fixed;
-  z-index:2999;
-  overflow:hidden;
-  background:#f3f7fc;
-  opacity:1;
-  pointer-events:none;
-  transform:translate3d(0,0,0);
-  transform-origin:center top;
-  will-change:opacity,transform,filter;
-  transition:
-    opacity .32s ease,
-    transform .36s cubic-bezier(.2,.75,.25,1),
-    filter .32s ease;
-}
-
-.tutorialPageSnapshot::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:rgba(3,15,28,.22);
-  pointer-events:none;
-}
-
-.tutorialPageSnapshot.leaving{
-  opacity:0;
-  transform:translate3d(0,-4px,0) scale(.998);
-  filter:blur(1.5px);
-}
-
-.tutorialPageSnapshotContent{
-  width:100%;
-  min-height:100%;
-  animation:none!important;
-  view-transition-name:none!important;
-}
-
 .tutorialSectionIndicator{
   position:fixed;
-  z-index:3003;
+  z-index:3002;
   display:flex;
   align-items:center;
   gap:10px;
@@ -936,7 +882,7 @@ textarea{
 
 .tutorialCoachmark{
   position:fixed;
-  z-index:3004;
+  z-index:3003;
   width:min(380px,calc(100vw - 32px));
   max-height:calc(100vh - 44px);
   overflow:auto;
@@ -1084,8 +1030,6 @@ textarea{
 
   .nav a,
   .tutorialSpotlight,
-  .tutorialTransitionVeil,
-  .tutorialPageSnapshot,
   .tutorialSectionIndicator,
   .tutorialCoachmark,
   .tutorialProgress span{
@@ -1114,6 +1058,21 @@ textarea{
   padding:26px 28px 50px;
   min-width:0;
   animation:pageEnter .38s cubic-bezier(.2,.75,.25,1) both;
+}
+
+html.tutorialRouteFlow .main{
+  animation:none;
+  opacity:1;
+  transform:translateY(0);
+  transition:
+    opacity .26s ease,
+    transform .32s cubic-bezier(.2,.75,.25,1);
+  will-change:opacity,transform;
+}
+
+html.tutorialRouteFlow.tutorialRouteHidden .main{
+  opacity:0;
+  transform:translateY(7px);
 }
 
 @keyframes pageEnter{

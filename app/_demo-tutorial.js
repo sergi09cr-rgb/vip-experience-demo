@@ -1,6 +1,14 @@
 'use client'
 
-import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {createPortal} from 'react-dom'
 import {usePathname,useRouter} from 'next/navigation'
 
@@ -280,7 +288,100 @@ function coachmarkPlacement(step){
   return 'bottom-right'
 }
 
-export default function DemoTutorial({userKey='current'}){
+const TutorialContext=createContext(null)
+
+function rectForNode(node){
+  const rect=node.getBoundingClientRect()
+  return {
+    top:clamp(rect.top-7,8,window.innerHeight-24),
+    left:clamp(rect.left-7,8,window.innerWidth-24),
+    width:Math.min(rect.width+14,window.innerWidth-16),
+    height:Math.min(rect.height+14,window.innerHeight-16)
+  }
+}
+
+function exactRectForNode(node){
+  const rect=node.getBoundingClientRect()
+  return {
+    top:rect.top,
+    left:rect.left,
+    width:rect.width,
+    height:rect.height
+  }
+}
+
+function nextFrame(){
+  return new Promise(resolve=>{
+    window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve))
+  })
+}
+
+function waitForTransition(node,properties,fallback=600){
+  if(
+    !node ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ){
+    return Promise.resolve()
+  }
+
+  return new Promise(resolve=>{
+    let finished=false
+    const finish=()=>{
+      if(finished)return
+      finished=true
+      node.removeEventListener('transitionend',handleEnd)
+      window.clearTimeout(timer)
+      resolve()
+    }
+    const handleEnd=event=>{
+      if(event.target===node&&properties.includes(event.propertyName))finish()
+    }
+    const timer=window.setTimeout(finish,fallback)
+    node.addEventListener('transitionend',handleEnd)
+  })
+}
+
+function waitForPageTarget(tutorialStep,timeout=8000){
+  return new Promise(resolve=>{
+    const started=Date.now()
+    let frame=null
+    let observer=null
+
+    const finish=node=>{
+      if(frame)window.cancelAnimationFrame(frame)
+      observer?.disconnect()
+      resolve(node)
+    }
+
+    const check=()=>{
+      const pathReady=window.location.pathname===tutorialStep.path
+      const node=pathReady && tutorialStep.selector
+        ? document.querySelector(tutorialStep.selector)
+        : pathReady
+          ? document.querySelector('.main')
+          : null
+
+      if(node){
+        finish(node)
+        return
+      }
+      if(Date.now()-started>=timeout){
+        finish(null)
+        return
+      }
+      frame=window.requestAnimationFrame(check)
+    }
+
+    observer=new MutationObserver(check)
+    observer.observe(document.body,{childList:true,subtree:true})
+    check()
+  })
+}
+
+export function DemoTutorialProvider({
+  children,
+  userKey='current-demo-session'
+}){
   const router=useRouter()
   const pathname=usePathname()
   const storageKey=`vipExperienceDemoTutorial:v1:${userKey}`
@@ -291,78 +392,290 @@ export default function DemoTutorial({userKey='current'}){
   const [targetRect,setTargetRect]=useState(null)
   const [sectionRect,setSectionRect]=useState(null)
   const [portalReady,setPortalReady]=useState(false)
-  const [movingToIndex,setMovingToIndex]=useState(null)
-  const [routeTransitioning,setRouteTransitioning]=useState(false)
-  const [snapshotActive,setSnapshotActive]=useState(false)
-  const snapshotTimerRef=useRef(null)
+  const [phase,setPhase]=useState('idle')
+  const [bridgePath,setBridgePath]=useState(null)
+  const spotlightRef=useRef(null)
+  const phaseRef=useRef('idle')
+  const movingRef=useRef(false)
+  const transitionTokenRef=useRef(0)
+  const activeStepRef=useRef(null)
+  const restoredRef=useRef(false)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
     [mode]
   )
   const step=mode ? steps[stepIndex] : null
-  const isMoving=movingToIndex!==null
+  const isMoving=phase!=='idle'
+
+  const changePhase=useCallback(nextPhase=>{
+    phaseRef.current=nextPhase
+    movingRef.current=nextPhase!=='idle'
+    setPhase(nextPhase)
+  },[])
+
+  const measureStep=useCallback((tutorialStep,path=tutorialStep?.path)=>{
+    const sectionKey=sectionKeyFromPath(path||window.location.pathname)
+    const sectionNode=document.querySelector(
+      `[data-tour="nav-${sectionKey}"]`
+    )
+    setSectionRect(sectionNode ? exactRectForNode(sectionNode) : null)
+
+    if(!tutorialStep?.selector){
+      setTargetRect(null)
+      return false
+    }
+    const node=document.querySelector(tutorialStep.selector)
+    if(!node){
+      setTargetRect(null)
+      return false
+    }
+    setTargetRect(rectForNode(node))
+    return true
+  },[])
+
+  const measureBridge=useCallback(path=>{
+    const sectionKey=sectionKeyFromPath(path)
+    const navNode=document.querySelector(
+      `[data-tour="nav-${sectionKey}"]`
+    )
+    if(!navNode)return false
+    setSectionRect(exactRectForNode(navNode))
+    setTargetRect(rectForNode(navNode))
+    return true
+  },[])
+
+  const saveProgress=useCallback((nextMode,index)=>{
+    window.localStorage.setItem(storageKey,'started')
+    window.sessionStorage.setItem(
+      progressKey,
+      JSON.stringify({mode:nextMode,stepIndex:index})
+    )
+  },[progressKey,storageKey])
+
+  const waitForScrollSettle=useCallback(node=>{
+    const rect=node.getBoundingClientRect()
+    const visible=
+      rect.top>=18 &&
+      rect.left>=18 &&
+      rect.bottom<=window.innerHeight-18 &&
+      rect.right<=window.innerWidth-18
+    if(visible)return Promise.resolve()
+
+    return new Promise(resolve=>{
+      let settledTimer=null
+      let fallbackTimer=null
+      let finished=false
+      const finish=()=>{
+        if(finished)return
+        finished=true
+        window.clearTimeout(settledTimer)
+        window.clearTimeout(fallbackTimer)
+        window.removeEventListener('scroll',handleScroll,true)
+        resolve()
+      }
+      const handleScroll=()=>{
+        window.clearTimeout(settledTimer)
+        settledTimer=window.setTimeout(finish,110)
+      }
+      window.addEventListener('scroll',handleScroll,true)
+      fallbackTimer=window.setTimeout(finish,720)
+      node.scrollIntoView({
+        block:'center',
+        inline:'nearest',
+        behavior:'smooth'
+      })
+      handleScroll()
+    })
+  },[])
+
+  const presentStep=useCallback(async(
+    tutorialStep,
+    index,
+    nextMode,
+    animateWithinPage=true
+  )=>{
+    if(!tutorialStep)return
+    const token=++transitionTokenRef.current
+    const currentPath=window.location.pathname
+    const changesPage=Boolean(
+      tutorialStep.path&&tutorialStep.path!==currentPath
+    )
+
+    movingRef.current=true
+    activeStepRef.current=tutorialStep
+    saveProgress(nextMode,index)
+
+    if(!changesPage){
+      changePhase('to-target')
+      setBridgePath(null)
+      setStepIndex(index)
+      const node=await waitForPageTarget(tutorialStep,2500)
+      if(token!==transitionTokenRef.current)return
+
+      if(node&&tutorialStep.selector){
+        const scrollPromise=waitForScrollSettle(node)
+        await nextFrame()
+        measureStep(tutorialStep,currentPath)
+        await Promise.all([
+          scrollPromise,
+          animateWithinPage
+            ? waitForTransition(
+                spotlightRef.current,
+                ['top','left','width','height'],
+                620
+              )
+            : Promise.resolve()
+        ])
+        measureStep(tutorialStep,currentPath)
+      }else{
+        measureStep(tutorialStep,currentPath)
+      }
+
+      if(token!==transitionTokenRef.current)return
+      changePhase('idle')
+      return
+    }
+
+    changePhase('to-nav')
+    setBridgePath(tutorialStep.path)
+    measureBridge(tutorialStep.path)
+    await nextFrame()
+    await waitForTransition(
+      spotlightRef.current,
+      ['top','left','width','height'],
+      520
+    )
+    if(token!==transitionTokenRef.current)return
+
+    const root=document.documentElement
+    root.classList.add('tutorialRouteFlow','tutorialRouteHidden')
+    changePhase('page-out')
+    await nextFrame()
+    await waitForTransition(
+      document.querySelector('.main'),
+      ['opacity'],
+      280
+    )
+    if(token!==transitionTokenRef.current)return
+
+    changePhase('waiting-route')
+    router.push(tutorialStep.path,{scroll:false})
+    const node=await waitForPageTarget(tutorialStep)
+    if(token!==transitionTokenRef.current)return
+
+    if(node&&tutorialStep.selector){
+      node.scrollIntoView({
+        block:'center',
+        inline:'nearest',
+        behavior:'auto'
+      })
+    }
+    await nextFrame()
+    if(token!==transitionTokenRef.current)return
+
+    setStepIndex(index)
+    activeStepRef.current=tutorialStep
+    measureBridge(tutorialStep.path)
+    await nextFrame()
+
+    changePhase('page-in')
+    measureStep(tutorialStep,tutorialStep.path)
+    root.classList.remove('tutorialRouteHidden')
+    await nextFrame()
+
+    await Promise.all([
+      waitForTransition(
+        document.querySelector('.main'),
+        ['opacity','transform'],
+        420
+      ),
+      waitForTransition(
+        spotlightRef.current,
+        ['top','left','width','height'],
+        620
+      )
+    ])
+    if(token!==transitionTokenRef.current)return
+
+    root.classList.remove('tutorialRouteFlow')
+    setBridgePath(null)
+    measureStep(tutorialStep,tutorialStep.path)
+    changePhase('idle')
+  },[
+    changePhase,
+    measureBridge,
+    measureStep,
+    router,
+    saveProgress,
+    waitForScrollSettle
+  ])
 
   useEffect(()=>{
     setPortalReady(true)
-    setSnapshotActive(Boolean(
-      document.querySelector('[data-tutorial-page-snapshot]')
-    ))
+    return ()=>{
+      transitionTokenRef.current+=1
+      document.documentElement.classList.remove(
+        'tutorialRouteFlow',
+        'tutorialRouteHidden'
+      )
+    }
   },[])
 
   useEffect(()=>{
     if(!mode)return
     const tutorialPaths=[...new Set(steps.map(item=>item.path).filter(Boolean))]
-    for(const tutorialPath of tutorialPaths){
-      router.prefetch(tutorialPath)
-    }
+    tutorialPaths.forEach(tutorialPath=>router.prefetch(tutorialPath))
   },[mode,router,steps])
 
   useEffect(()=>{
+    if(restoredRef.current)return
+    restoredRef.current=true
     try{
       const saved=JSON.parse(
         window.sessionStorage.getItem(progressKey)||'null'
       )
       if(
-        saved &&
-        ['quick','full'].includes(saved.mode) &&
-        Number.isInteger(saved.stepIndex)
-      ){
-        const savedSteps=saved.mode==='full' ? FULL_STEPS : QUICK_STEPS
-        const savedIndex=clamp(saved.stepIndex,0,savedSteps.length-1)
-        const snapshotPending=Boolean(
-          document.querySelector('[data-tutorial-page-snapshot]')
-        )
-        setMode(saved.mode)
-        setStepIndex(savedIndex)
-        if(savedSteps[savedIndex]?.path!==pathname||snapshotPending){
-          setMovingToIndex(savedIndex)
-          setRouteTransitioning(true)
-        }
-      }
+        !saved ||
+        !['quick','full'].includes(saved.mode) ||
+        !Number.isInteger(saved.stepIndex)
+      )return
+
+      const savedSteps=saved.mode==='full' ? FULL_STEPS : QUICK_STEPS
+      const savedIndex=clamp(saved.stepIndex,0,savedSteps.length-1)
+      const savedStep=savedSteps[savedIndex]
+      setMode(saved.mode)
+      setStepIndex(savedIndex)
+      activeStepRef.current=savedStep
+      window.requestAnimationFrame(()=>{
+        void presentStep(savedStep,savedIndex,saved.mode,false)
+      })
     }catch{
       window.sessionStorage.removeItem(progressKey)
     }
-  },[pathname,progressKey])
+  },[presentStep,progressKey])
 
   useEffect(()=>{
     function handleTutorialStart(event){
       const nextMode=event.detail?.mode
       if(!['quick','full'].includes(nextMode))return
+      const nextSteps=nextMode==='full' ? FULL_STEPS : QUICK_STEPS
+      const firstStep=nextSteps[0]
+
+      transitionTokenRef.current+=1
+      document.documentElement.classList.remove(
+        'tutorialRouteFlow',
+        'tutorialRouteHidden'
+      )
       setChooserOpen(false)
       setMode(nextMode)
       setStepIndex(0)
       setTargetRect(null)
       setSectionRect(null)
-      if((nextMode==='full' ? FULL_STEPS : QUICK_STEPS)[0]?.path!==pathname){
-        setMovingToIndex(0)
-        setRouteTransitioning(true)
-      }
-      window.localStorage.setItem(storageKey,'started')
-      window.sessionStorage.setItem(
-        progressKey,
-        JSON.stringify({mode:nextMode,stepIndex:0})
-      )
+      activeStepRef.current=firstStep
+      movingRef.current=false
+      changePhase('idle')
+      void presentStep(firstStep,0,nextMode,false)
     }
 
     window.addEventListener('vip-demo-tutorial-start',handleTutorialStart)
@@ -370,411 +683,200 @@ export default function DemoTutorial({userKey='current'}){
       'vip-demo-tutorial-start',
       handleTutorialStart
     )
-  },[pathname,progressKey,storageKey])
-
-  const measureTarget=useCallback(()=>{
-    const sectionKey=sectionKeyFromPath(pathname)
-    const sectionNode=document.querySelector(
-      `[data-tour="nav-${sectionKey}"]`
-    )
-    if(sectionNode){
-      const sectionBox=sectionNode.getBoundingClientRect()
-      setSectionRect({
-        top:sectionBox.top,
-        left:sectionBox.left,
-        width:sectionBox.width,
-        height:sectionBox.height
-      })
-    }else{
-      setSectionRect(null)
-    }
-
-    if(!step?.selector){
-      setTargetRect(null)
-      return false
-    }
-    const node=document.querySelector(step.selector)
-    if(!node){
-      return false
-    }
-    const rect=node.getBoundingClientRect()
-    setTargetRect({
-      top:clamp(rect.top-7,8,window.innerHeight-24),
-      left:clamp(rect.left-7,8,window.innerWidth-24),
-      width:Math.min(rect.width+14,window.innerWidth-16),
-      height:Math.min(rect.height+14,window.innerHeight-16)
-    })
-    return true
-  },[pathname,step])
-
-  const clearPageSnapshot=useCallback(()=>{
-    if(snapshotTimerRef.current){
-      window.clearTimeout(snapshotTimerRef.current)
-      snapshotTimerRef.current=null
-    }
-    document
-      .querySelector('[data-tutorial-page-snapshot]')
-      ?.remove()
-    setSnapshotActive(false)
-  },[])
-
-  const capturePageSnapshot=useCallback(()=>{
-    const source=document.querySelector('.main')
-    if(!source)return
-
-    document
-      .querySelector('[data-tutorial-page-snapshot]')
-      ?.remove()
-
-    const rect=source.getBoundingClientRect()
-    const clone=source.cloneNode(true)
-    const sourceControls=source.querySelectorAll('input,textarea,select')
-    const cloneControls=clone.querySelectorAll('input,textarea,select')
-
-    sourceControls.forEach((sourceControl,index)=>{
-      const cloneControl=cloneControls[index]
-      if(!cloneControl)return
-
-      if(sourceControl instanceof HTMLSelectElement){
-        Array.from(cloneControl.options).forEach((option,optionIndex)=>{
-          option.toggleAttribute(
-            'selected',
-            Boolean(sourceControl.options[optionIndex]?.selected)
-          )
-        })
-      }else if(sourceControl instanceof HTMLTextAreaElement){
-        cloneControl.textContent=sourceControl.value
-      }else{
-        cloneControl.setAttribute('value',sourceControl.value)
-        if(['checkbox','radio'].includes(sourceControl.type)){
-          cloneControl.toggleAttribute('checked',sourceControl.checked)
-        }
-      }
-    })
-
-    clone.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'))
-    clone.classList.add('tutorialPageSnapshotContent')
-    clone.setAttribute('aria-hidden','true')
-    clone.setAttribute('inert','')
-
-    const snapshot=document.createElement('div')
-    snapshot.className='tutorialPageSnapshot'
-    snapshot.dataset.tutorialPageSnapshot='true'
-    snapshot.setAttribute('aria-hidden','true')
-    Object.assign(snapshot.style,{
-      top:`${rect.top}px`,
-      left:`${rect.left}px`,
-      width:`${rect.width}px`,
-      height:`${rect.height}px`
-    })
-    snapshot.appendChild(clone)
-    document.body.appendChild(snapshot)
-    setSnapshotActive(true)
-  },[])
-
-  const releasePageSnapshot=useCallback(()=>{
-    const snapshot=document.querySelector(
-      '[data-tutorial-page-snapshot]'
-    )
-    if(!snapshot){
-      setSnapshotActive(false)
-      setMovingToIndex(null)
-      return
-    }
-    snapshot.classList.add('leaving')
-    if(snapshotTimerRef.current){
-      window.clearTimeout(snapshotTimerRef.current)
-    }
-    snapshotTimerRef.current=window.setTimeout(()=>{
-      snapshot.remove()
-      setSnapshotActive(false)
-      setMovingToIndex(null)
-      snapshotTimerRef.current=null
-    },360)
-  },[])
-
-  const navigateBetweenSections=useCallback((nextPath)=>{
-    router.push(nextPath,{scroll:false})
-  },[router])
+  },[changePhase,presentStep])
 
   useEffect(()=>{
-    if(!step)return
-    if(movingToIndex!==null && movingToIndex!==stepIndex){
-      const pendingStep=steps[movingToIndex]
-      if(pendingStep?.path===pathname){
-        setStepIndex(movingToIndex)
-      }
-      return
-    }
-    if(step.path && pathname!==step.path){
-      window.sessionStorage.setItem(
-        progressKey,
-        JSON.stringify({mode,stepIndex})
-      )
-      router.push(step.path,{scroll:false})
-      return
-    }
-
-    let attempts=0
-    let retryTimer=null
-    let settleTimer=null
-
-    const finishReveal=()=>{
-      measureTarget()
-      if(movingToIndex===stepIndex){
-        setRouteTransitioning(false)
-        if(document.querySelector('[data-tutorial-page-snapshot]')){
-          releasePageSnapshot()
-        }else{
-          setMovingToIndex(null)
-        }
-      }
-    }
-
-    const revealTarget=()=>{
-      if(!step.selector){
-        setTargetRect(null)
-        finishReveal()
-        return
-      }
-
-      const node=document.querySelector(step.selector)
-      if(!node){
-        attempts+=1
-        if(attempts<10){
-          retryTimer=window.setTimeout(revealTarget,120)
-        }else if(!step.optional){
-          setTargetRect(null)
-        }
-        return
-      }
-
-      const rect=node.getBoundingClientRect()
-      const alreadyVisible=
-        rect.top>=18 &&
-        rect.left>=18 &&
-        rect.bottom<=window.innerHeight-18 &&
-        rect.right<=window.innerWidth-18
-
-      if(!alreadyVisible){
-        node.scrollIntoView({
-          block:'center',
-          inline:'nearest',
-          behavior:'smooth'
-        })
-      }
-      settleTimer=window.setTimeout(
-        finishReveal,
-        alreadyVisible ? 70 : 380
-      )
-    }
-
+    if(!mode)return
     let frame=null
     const measureOnViewportChange=()=>{
       if(frame)window.cancelAnimationFrame(frame)
-      frame=window.requestAnimationFrame(measureTarget)
+      frame=window.requestAnimationFrame(()=>{
+        if(phaseRef.current==='to-nav'&&bridgePath){
+          measureBridge(bridgePath)
+        }else if(!['page-out','waiting-route'].includes(phaseRef.current)){
+          measureStep(activeStepRef.current,window.location.pathname)
+        }
+      })
     }
-
-    const timer=window.setTimeout(revealTarget,100)
     window.addEventListener('resize',measureOnViewportChange)
     window.addEventListener('scroll',measureOnViewportChange,true)
     return ()=>{
-      window.clearTimeout(timer)
-      window.clearTimeout(retryTimer)
-      window.clearTimeout(settleTimer)
       if(frame)window.cancelAnimationFrame(frame)
       window.removeEventListener('resize',measureOnViewportChange)
       window.removeEventListener('scroll',measureOnViewportChange,true)
     }
-  },[
-    measureTarget,
-    mode,
-    movingToIndex,
-    pathname,
-    progressKey,
-    releasePageSnapshot,
-    router,
-    step,
-    stepIndex
-  ])
+  },[bridgePath,measureBridge,measureStep,mode,pathname])
+
+  function openChooser(){
+    if(movingRef.current)return
+    setChooserOpen(true)
+  }
 
   function start(nextMode){
-    const nextSteps=nextMode==='full' ? FULL_STEPS : QUICK_STEPS
-    setChooserOpen(false)
-    setMode(nextMode)
-    setStepIndex(0)
-    setTargetRect(null)
-    setSectionRect(null)
-    if(nextSteps[0]?.path!==pathname){
-      setMovingToIndex(0)
-      setRouteTransitioning(true)
-    }
-    window.localStorage.setItem(storageKey,'started')
-    window.sessionStorage.setItem(
-      progressKey,
-      JSON.stringify({mode:nextMode,stepIndex:0})
+    window.dispatchEvent(
+      new CustomEvent('vip-demo-tutorial-start',{detail:{mode:nextMode}})
     )
   }
 
   function close(result='skipped'){
+    transitionTokenRef.current+=1
+    document.documentElement.classList.remove(
+      'tutorialRouteFlow',
+      'tutorialRouteHidden'
+    )
+    movingRef.current=false
+    changePhase('idle')
     setMode(null)
     setStepIndex(0)
     setTargetRect(null)
     setSectionRect(null)
-    setMovingToIndex(null)
-    setRouteTransitioning(false)
-    clearPageSnapshot()
+    setBridgePath(null)
+    activeStepRef.current=null
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
+
     if(result==='completed'){
       router.push('/panel',{scroll:true})
-      window.requestAnimationFrame(()=>{
+      window.setTimeout(()=>{
         window.scrollTo({top:0,left:0,behavior:'smooth'})
-      })
+      },180)
     }
   }
 
   function move(direction){
-    if(isMoving)return
+    if(movingRef.current||!mode)return
     const next=stepIndex+direction
     if(next>=steps.length){
-      setMovingToIndex(steps.length)
-      window.setTimeout(()=>close('completed'),110)
+      close('completed')
       return
     }
     const bounded=Math.max(0,next)
-    const pendingStep=steps[bounded]
-    const changesRoute=Boolean(
-      pendingStep?.path && pendingStep.path!==pathname
-    )
-    window.sessionStorage.setItem(
-      progressKey,
-      JSON.stringify({mode,stepIndex:bounded})
-    )
-    setMovingToIndex(bounded)
-    setRouteTransitioning(changesRoute)
-    if(changesRoute){
-      capturePageSnapshot()
-    }
-    window.setTimeout(()=>{
-      if(changesRoute){
-        navigateBetweenSections(pendingStep.path)
-      }else{
-        setStepIndex(bounded)
-      }
-    },140)
+    void presentStep(steps[bounded],bounded,mode,true)
   }
 
-  return <>
-    <button
-      type="button"
-      className="tutorialLaunchButton"
-      data-tour="tutorial-button"
-      onClick={()=>setChooserOpen(true)}
-    >
-      <span aria-hidden="true">?</span>
-      Tutorial
-    </button>
+  const contextValue=useMemo(
+    ()=>({openChooser,isActive:Boolean(mode)}),
+    [mode]
+  )
+  const highlightedSection=sectionKeyFromPath(bridgePath||pathname)
+
+  return <TutorialContext.Provider value={contextValue}>
+    {children}
 
     {portalReady&&createPortal(<>
-    {chooserOpen&&(
-      <div className="tutorialBackdrop" role="presentation">
-        <section
-          className="tutorialChooser"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="tutorialChooserTitle"
-        >
-          <button
-            type="button"
-            className="tutorialClose"
-            aria-label="Cerrar tutorial"
-            onClick={()=>{
-              setChooserOpen(false)
-              window.localStorage.setItem(storageKey,'later')
-            }}
+      {chooserOpen&&(
+        <div className="tutorialBackdrop" role="presentation">
+          <section
+            className="tutorialChooser"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tutorialChooserTitle"
           >
-            ×
-          </button>
-          <div className="tutorialEyebrow">GUÍA INTERACTIVA</div>
-          <h2 id="tutorialChooserTitle">¿Cómo quieres conocer la aplicación?</h2>
-          <p>Elige un recorrido. Podrás repetirlo o cambiar de modalidad cuando quieras.</p>
-          <div className="tutorialChoices">
-            <button type="button" onClick={()=>start('quick')}>
-              <strong>Tutorial rápido</strong>
-              <span>2–3 minutos · Lo fundamental para empezar</span>
+            <button
+              type="button"
+              className="tutorialClose"
+              aria-label="Cerrar tutorial"
+              onClick={()=>{
+                setChooserOpen(false)
+                window.localStorage.setItem(storageKey,'later')
+              }}
+            >
+              ×
             </button>
-            <button type="button" onClick={()=>start('full')}>
-              <strong>Tutorial completo</strong>
-              <span>8–10 minutos · Todas las áreas y funciones</span>
-            </button>
-          </div>
-        </section>
-      </div>
-    )}
-
-    {step&&(
-      <div className="tutorialLayer">
-        {targetRect&&(
-          <div className="tutorialSpotlight" style={targetRect}/>
-        )}
-        {sectionRect&&(
-          <div
-            className="tutorialSectionIndicator"
-            style={sectionRect}
-            aria-hidden="true"
-          >
-            <span>{SECTION_META[sectionKeyFromPath(pathname)]?.icon}</span>
-            {SECTION_META[sectionKeyFromPath(pathname)]?.label}
-          </div>
-        )}
-        <div
-          className={`tutorialTransitionVeil${routeTransitioning && !snapshotActive ? ' visible' : ''}`}
-          aria-hidden="true"
-        />
-        {!targetRect&&!snapshotActive&&<div className="tutorialDimmer"/>}
-        <section
-          className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-busy={isMoving}
-          aria-labelledby="tutorialStepTitle"
-        >
-          <div className="tutorialProgressRow">
-            <span>{mode==='full' ? 'TUTORIAL COMPLETO' : 'TUTORIAL RÁPIDO'}</span>
-            <span>{stepIndex+1} / {steps.length}</span>
-          </div>
-          <div className="tutorialProgress" aria-hidden="true">
-            <span style={{width:`${((stepIndex+1)/steps.length)*100}%`}}/>
-          </div>
-          <h2 id="tutorialStepTitle">{step.title}</h2>
-          <p>{step.body}</p>
-          <div className="tutorialControls">
-            <button type="button" className="tutorialSkip" onClick={()=>close()}>
-              Omitir
-            </button>
-            <div>
-              <button
-                type="button"
-                className="btn"
-                disabled={stepIndex===0||isMoving}
-                onClick={()=>move(-1)}
-              >
-                Anterior
+            <div className="tutorialEyebrow">GUÍA INTERACTIVA</div>
+            <h2 id="tutorialChooserTitle">¿Cómo quieres conocer la aplicación?</h2>
+            <p>Elige un recorrido. Podrás repetirlo o cambiar de modalidad cuando quieras.</p>
+            <div className="tutorialChoices">
+              <button type="button" onClick={()=>start('quick')}>
+                <strong>Tutorial rápido</strong>
+                <span>2–3 minutos · Lo fundamental para empezar</span>
               </button>
-              <button
-                type="button"
-                className="btn primary"
-                disabled={isMoving}
-                onClick={()=>move(1)}
-              >
-                {stepIndex===steps.length-1 ? 'Finalizar' : 'Siguiente'}
+              <button type="button" onClick={()=>start('full')}>
+                <strong>Tutorial completo</strong>
+                <span>8–10 minutos · Todas las áreas y funciones</span>
               </button>
             </div>
-          </div>
-        </section>
-      </div>
-    )}
+          </section>
+        </div>
+      )}
+
+      {step&&(
+        <div className="tutorialLayer">
+          {targetRect&&(
+            <div
+              ref={spotlightRef}
+              className="tutorialSpotlight"
+              style={targetRect}
+            />
+          )}
+          {sectionRect&&(
+            <div
+              className="tutorialSectionIndicator"
+              style={sectionRect}
+              aria-hidden="true"
+            >
+              <span>{SECTION_META[highlightedSection]?.icon}</span>
+              {SECTION_META[highlightedSection]?.label}
+            </div>
+          )}
+          {!targetRect&&<div className="tutorialDimmer"/>}
+          <section
+            className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-busy={isMoving}
+            aria-labelledby="tutorialStepTitle"
+          >
+            <div className="tutorialProgressRow">
+              <span>{mode==='full' ? 'TUTORIAL COMPLETO' : 'TUTORIAL RÁPIDO'}</span>
+              <span>{stepIndex+1} / {steps.length}</span>
+            </div>
+            <div className="tutorialProgress" aria-hidden="true">
+              <span style={{width:`${((stepIndex+1)/steps.length)*100}%`}}/>
+            </div>
+            <h2 id="tutorialStepTitle">{step.title}</h2>
+            <p>{step.body}</p>
+            <div className="tutorialControls">
+              <button type="button" className="tutorialSkip" onClick={()=>close()}>
+                Omitir
+              </button>
+              <div>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={stepIndex===0||isMoving}
+                  onClick={()=>move(-1)}
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  className="btn primary"
+                  disabled={isMoving}
+                  onClick={()=>move(1)}
+                >
+                  {stepIndex===steps.length-1 ? 'Finalizar' : 'Siguiente'}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </>,document.body)}
-  </>
+  </TutorialContext.Provider>
 }
+
+export function DemoTutorialLauncher(){
+  const tutorial=useContext(TutorialContext)
+  return <button
+    type="button"
+    className="tutorialLaunchButton"
+    data-tour="tutorial-button"
+    onClick={()=>tutorial?.openChooser()}
+  >
+    <span aria-hidden="true">?</span>
+    Tutorial
+  </button>
+}
+
+export default DemoTutorialLauncher
