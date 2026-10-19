@@ -1493,7 +1493,7 @@ export default function HistoryClient({
         >
           Página {currentPage} de {pageCount}
           {' · '}
-          {visible.length} canvis
+          {visible.length} {visible.length===1 ? 'cambio' : 'cambios'}
         </span>
 
 

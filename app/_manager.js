@@ -3713,7 +3713,7 @@ const missingClient=
       task:giftTask(['carta'])
     },
     {
-      label:'Samarreta',
+      label:'Camiseta',
       task:giftTask([
         'samarreta',
         'camisa'
@@ -3724,7 +3724,7 @@ const missingClient=
       task:giftTask(['bufanda'])
     },
     {
-      label:'Caixa',
+      label:'Caja',
       task:giftTask(['caixa'])
     }
   ]
@@ -5068,7 +5068,7 @@ function Detail({
             options={TASK_PRIORITY_FILTERS}
             allLabel="Todas las prioridades"
             selectionLabel="prioridades seleccionadas"
-            ariaLabel="Prioritats"
+            ariaLabel="Prioridades"
             counts={priorityCounts}
             onChange={priority=>
               rememberTaskFilters(
@@ -5234,7 +5234,7 @@ function Detail({
               className="btn"
               onClick={clear}
             >
-              Borra filtre
+              Borrar filtros
             </button>
 
           </div>
@@ -5261,7 +5261,7 @@ function Detail({
                 <th>Tarea</th>
                 <th>Responsable</th>
                 <th>Estado actual</th>
-                <th>Prioritat</th>
+                <th>Prioridad</th>
                 <th></th>
               </tr>
 
