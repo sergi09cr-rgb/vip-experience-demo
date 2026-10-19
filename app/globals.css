@@ -857,9 +857,31 @@ textarea{
     height .55s cubic-bezier(.2,.75,.25,1);
 }
 
-.tutorialCoachmark{
+.tutorialSectionIndicator{
   position:fixed;
   z-index:3002;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 14px;
+  border:3px solid #66b4ff;
+  border-radius:12px;
+  background:#106dcc;
+  color:#fff;
+  box-shadow:0 0 0 5px rgba(102,180,255,.22);
+  font-size:14px;
+  font-weight:850;
+  pointer-events:none;
+  transition:
+    top .55s cubic-bezier(.2,.75,.25,1),
+    left .55s cubic-bezier(.2,.75,.25,1),
+    width .55s cubic-bezier(.2,.75,.25,1),
+    height .55s cubic-bezier(.2,.75,.25,1);
+}
+
+.tutorialCoachmark{
+  position:fixed;
+  z-index:3003;
   width:min(380px,calc(100vw - 32px));
   max-height:calc(100vh - 44px);
   overflow:auto;
@@ -874,6 +896,12 @@ textarea{
     opacity .3s ease,
     transform .3s ease;
   animation:tutorialCoachmarkIn .36s ease-out both;
+}
+
+.tutorialCoachmark.transitioning{
+  opacity:.62;
+  transform:translateY(4px) scale(.992);
+  pointer-events:none;
 }
 
 .tutorialCoachmark.bottom-right{
@@ -2217,6 +2245,18 @@ tr:hover td{
 
 .stockCurrentTable td:first-child{
   overflow-wrap:anywhere;
+}
+
+.stockCurrentTable tbody tr.stocklow td{
+  background:#fff8e8!important;
+}
+
+.stockCurrentTable tbody tr.stocklow td:first-child{
+  box-shadow:inset 4px 0 0 #e4a72c;
+}
+
+.stockCurrentTable tbody tr.stocklow td:last-child{
+  color:#9a5700;
 }
 
 .stockRowActions{

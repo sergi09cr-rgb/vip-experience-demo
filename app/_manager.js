@@ -5724,7 +5724,7 @@ disabled={!can('tasks_update') && !can('tasks_complete')}
                     <tr
                       key={material.id}
                       className={
-                        material.quantitat<=0
+                        Number(material.quantitat)<=4
                           ? 'stocklow'
                           : ''
                       }

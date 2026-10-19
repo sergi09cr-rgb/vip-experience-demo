@@ -228,8 +228,24 @@ const FULL_STEPS=[
   }
 ]
 
+const SECTION_META={
+  introduccion:{icon:'⌂',label:'Introducción'},
+  panel:{icon:'▣',label:'Panel'},
+  calendario:{icon:'◆',label:'Calendario'},
+  clientes:{icon:'♧',label:'Clientes'},
+  tareas:{icon:'✓',label:'Tareas'},
+  stock:{icon:'▣',label:'Stock'},
+  historial:{icon:'◷',label:'Historial'},
+  configuracion:{icon:'⚙',label:'Configuración'}
+}
+
 function clamp(value,min,max){
   return Math.min(Math.max(value,min),max)
+}
+
+function sectionKeyFromPath(pathname=''){
+  const section=pathname.split('/').filter(Boolean)[0]||'introduccion'
+  return section==='configuracion' ? 'configuracion' : section
 }
 
 function coachmarkPlacement(step){
@@ -273,13 +289,16 @@ export default function DemoTutorial({userKey='current'}){
   const [mode,setMode]=useState(null)
   const [stepIndex,setStepIndex]=useState(0)
   const [targetRect,setTargetRect]=useState(null)
+  const [sectionRect,setSectionRect]=useState(null)
   const [portalReady,setPortalReady]=useState(false)
+  const [movingToIndex,setMovingToIndex]=useState(null)
 
   const steps=useMemo(
     ()=>mode==='full' ? FULL_STEPS : QUICK_STEPS,
     [mode]
   )
   const step=mode ? steps[stepIndex] : null
+  const isMoving=movingToIndex!==null
 
   useEffect(()=>{
     setPortalReady(true)
@@ -287,11 +306,26 @@ export default function DemoTutorial({userKey='current'}){
 
   useEffect(()=>{
     if(!step)return
-    const nextPath=steps[stepIndex+1]?.path
-    if(nextPath && nextPath!==pathname){
-      router.prefetch(nextPath)
+    const nearbyPaths=[
+      steps[stepIndex-1]?.path,
+      steps[stepIndex+1]?.path
+    ]
+    for(const nearbyPath of nearbyPaths){
+      if(nearbyPath && nearbyPath!==pathname){
+        router.prefetch(nearbyPath)
+      }
     }
   },[pathname,router,step,stepIndex,steps])
+
+  useEffect(()=>{
+    if(
+      movingToIndex===null ||
+      movingToIndex!==stepIndex ||
+      step?.path!==pathname
+    )return
+    const timer=window.setTimeout(()=>setMovingToIndex(null),40)
+    return ()=>window.clearTimeout(timer)
+  },[movingToIndex,pathname,stepIndex,step?.path])
 
   useEffect(()=>{
     try{
@@ -335,6 +369,22 @@ export default function DemoTutorial({userKey='current'}){
   },[progressKey,storageKey])
 
   const measureTarget=useCallback(()=>{
+    const sectionKey=sectionKeyFromPath(pathname)
+    const sectionNode=document.querySelector(
+      `[data-tour="nav-${sectionKey}"]`
+    )
+    if(sectionNode){
+      const sectionBox=sectionNode.getBoundingClientRect()
+      setSectionRect({
+        top:sectionBox.top,
+        left:sectionBox.left,
+        width:sectionBox.width,
+        height:sectionBox.height
+      })
+    }else{
+      setSectionRect(null)
+    }
+
     if(!step?.selector){
       setTargetRect(null)
       return false
@@ -351,7 +401,7 @@ export default function DemoTutorial({userKey='current'}){
       height:Math.min(rect.height+14,window.innerHeight-16)
     })
     return true
-  },[step])
+  },[pathname,step])
 
   useEffect(()=>{
     if(!step)return
@@ -435,14 +485,24 @@ export default function DemoTutorial({userKey='current'}){
     setMode(null)
     setStepIndex(0)
     setTargetRect(null)
+    setSectionRect(null)
+    setMovingToIndex(null)
     window.localStorage.setItem(storageKey,result)
     window.sessionStorage.removeItem(progressKey)
+    if(result==='completed'){
+      router.push('/panel',{scroll:true})
+      window.requestAnimationFrame(()=>{
+        window.scrollTo({top:0,left:0,behavior:'smooth'})
+      })
+    }
   }
 
   function move(direction){
+    if(isMoving)return
     const next=stepIndex+direction
     if(next>=steps.length){
-      close('completed')
+      setMovingToIndex(steps.length)
+      window.setTimeout(()=>close('completed'),110)
       return
     }
     const bounded=Math.max(0,next)
@@ -450,7 +510,8 @@ export default function DemoTutorial({userKey='current'}){
       progressKey,
       JSON.stringify({mode,stepIndex:bounded})
     )
-    setStepIndex(bounded)
+    setMovingToIndex(bounded)
+    window.setTimeout(()=>setStepIndex(bounded),110)
   }
 
   return <>
@@ -506,12 +567,23 @@ export default function DemoTutorial({userKey='current'}){
         {targetRect&&(
           <div className="tutorialSpotlight" style={targetRect}/>
         )}
+        {sectionRect&&(
+          <div
+            className="tutorialSectionIndicator"
+            style={sectionRect}
+            aria-hidden="true"
+          >
+            <span>{SECTION_META[sectionKeyFromPath(pathname)]?.icon}</span>
+            {SECTION_META[sectionKeyFromPath(pathname)]?.label}
+          </div>
+        )}
         {!targetRect&&<div className="tutorialDimmer"/>}
         <section
           key={`${mode}:${stepIndex}:${pathname}`}
-          className={`tutorialCoachmark ${coachmarkPlacement(step)}`}
+          className={`tutorialCoachmark ${coachmarkPlacement(step)}${isMoving ? ' transitioning' : ''}`}
           role="dialog"
           aria-modal="true"
+          aria-busy={isMoving}
           aria-labelledby="tutorialStepTitle"
         >
           <div className="tutorialProgressRow">
@@ -531,13 +603,22 @@ export default function DemoTutorial({userKey='current'}){
               <button
                 type="button"
                 className="btn"
-                disabled={stepIndex===0}
+                disabled={stepIndex===0||isMoving}
                 onClick={()=>move(-1)}
               >
                 Anterior
               </button>
-              <button type="button" className="btn primary" onClick={()=>move(1)}>
-                {stepIndex===steps.length-1 ? 'Finalizar' : 'Siguiente'}
+              <button
+                type="button"
+                className="btn primary"
+                disabled={isMoving}
+                onClick={()=>move(1)}
+              >
+                {isMoving
+                  ? 'Cambiando…'
+                  : stepIndex===steps.length-1
+                    ? 'Finalizar'
+                    : 'Siguiente'}
               </button>
             </div>
           </div>

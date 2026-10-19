@@ -40,7 +40,7 @@ export default async function Page(){
 
   return (
     <Shell
-      userEmail={user.email}
+      userEmail={user.email||profile?.nom||'Demo temporal'}
       role={actualRole}
       effectiveRole={effectiveRole}
       active="configuracio"
